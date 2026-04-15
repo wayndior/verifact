@@ -40,9 +40,12 @@ app.use(
 // ── CORS ──────────────────────────────────────────────────────────────────────
 // Set CORS_ORIGIN in .env to your domain (e.g. https://verifact.work)
 // Multiple origins: comma-separated list
+// CORS_ORIGIN takes priority; falls back to BASE_URL for single-domain deployments
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
-  : [];
+  : process.env.BASE_URL
+    ? [process.env.BASE_URL]
+    : [];
 
 app.use(
   cors({

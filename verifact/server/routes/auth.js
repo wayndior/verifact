@@ -66,7 +66,7 @@ router.post('/register', async (req, res) => {
   );
 
   // Fire-and-forget — don't let an email failure block registration
-  sendWelcome({ email: normalizedEmail, full_name: full_name.trim() }).catch(console.error);
+  sendWelcome(normalizedEmail, full_name.trim()).catch(console.error);
 
   res.status(201).json({
     token,
@@ -103,25 +103,55 @@ router.post('/login', async (req, res) => {
   res.json({ token, user: safeUser });
 });
 
-// ── GET /api/auth/me ──────────────────────────────────────────────────────────
-router.get('/me', async (req, res) => {
+// ── Shared auth middleware ────────────────────────────────────────────────────
+const requireAuth = (req, res, next) => {
   const header = req.headers.authorization;
-  if (!header?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Not authenticated.' });
-  }
+  if (!header?.startsWith('Bearer ')) return res.status(401).json({ error: 'Not authenticated.' });
   try {
-    const decoded = jwt.verify(header.slice(7), JWT_SECRET);
-    const user = await query.get(
-      `SELECT user_id, email, full_name, country, role, institution,
-              school_id, address, email_verified, created_at
-       FROM users WHERE user_id = ?`,
-      [decoded.user_id]
-    );
-    if (!user) return res.status(404).json({ error: 'User not found.' });
-    res.json({ user });
+    req.user = jwt.verify(header.slice(7), JWT_SECRET);
+    next();
   } catch {
     res.status(401).json({ error: 'Invalid or expired token.' });
   }
+};
+
+// ── GET /api/auth/me ──────────────────────────────────────────────────────────
+router.get('/me', requireAuth, async (req, res) => {
+  const user = await query.get(
+    `SELECT user_id, email, full_name, country, role, institution,
+            school_id, address, email_verified, created_at
+     FROM users WHERE user_id = ?`,
+    [req.user.user_id]
+  );
+  if (!user) return res.status(404).json({ error: 'User not found.' });
+  res.json({ user });
+});
+
+// ── PUT /api/auth/profile ─────────────────────────────────────────────────────
+router.put('/profile', requireAuth, async (req, res) => {
+  const { full_name, country, institution, school_id, address } = req.body;
+  if (!full_name || !full_name.trim()) {
+    return res.status(400).json({ error: 'Full name is required.' });
+  }
+  await query.run(
+    `UPDATE users SET full_name = ?, country = ?, institution = ?, school_id = ?, address = ?
+     WHERE user_id = ?`,
+    [
+      full_name.trim(),
+      country ?? null,
+      institution ?? null,
+      school_id ?? null,
+      address ?? null,
+      req.user.user_id,
+    ]
+  );
+  const updated = await query.get(
+    `SELECT user_id, email, full_name, country, role, institution,
+            school_id, address, email_verified, created_at
+     FROM users WHERE user_id = ?`,
+    [req.user.user_id]
+  );
+  res.json({ user: updated });
 });
 
 export default router;

@@ -13,8 +13,10 @@ export async function sendPasswordReset(email, name, token) {
   const resetUrl = `${BASE_URL}/reset-password/${token}`
 
   if (!resend) {
-    // No API key yet — log to console for development
-    console.log(`[DEV] Password reset link for ${email}: ${resetUrl}`)
+    // No API key — log link only in development
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[DEV] Password reset link for ${email}: ${resetUrl}`)
+    }
     return { ok: true, dev: true }
   }
 
@@ -50,7 +52,9 @@ export async function sendPasswordReset(email, name, token) {
 export async function sendWelcome(email, name) {
   const resend = getResend()
   if (!resend) {
-    console.log(`[DEV] Welcome email for ${email}`)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[DEV] Welcome email for ${email}`)
+    }
     return { ok: true, dev: true }
   }
 

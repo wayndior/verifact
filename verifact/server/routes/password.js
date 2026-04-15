@@ -18,7 +18,7 @@ router.post('/forgot', async (req, res) => {
   if (!email) return res.status(400).json({ error: 'Email is required.' });
 
   const normalizedEmail = email.toLowerCase().trim();
-  const user = await query.get('SELECT user_id FROM users WHERE email = ?', [normalizedEmail]);
+  const user = await query.get('SELECT user_id, full_name FROM users WHERE email = ?', [normalizedEmail]);
 
   if (!user) return res.json(FORGOT_RESPONSE); // silent — no enumeration
 
@@ -34,7 +34,7 @@ router.post('/forgot', async (req, res) => {
   );
 
   // Fire-and-forget — don't expose email failures to the client
-  sendPasswordReset({ email: normalizedEmail, token }).catch(console.error);
+  sendPasswordReset(normalizedEmail, user.full_name, token).catch(console.error);
 
   res.json(FORGOT_RESPONSE);
 });
