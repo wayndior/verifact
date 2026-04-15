@@ -18,16 +18,29 @@ const db = createClient({
 
 // ── Thin query helpers ────────────────────────────────────────────────────────
 
+// Convert a libsql Row object into a plain JS object so that destructuring,
+// spread, and Object.keys() all work correctly in route handlers.
+function toPlain(row, columns) {
+  if (!row) return null;
+  const obj = {};
+  for (const col of columns) {
+    const name = typeof col === 'string' ? col : col.name;
+    obj[name] = row[name];
+  }
+  return obj;
+}
+
 export const query = {
-  /** Returns the first row, or null. */
+  /** Returns the first row as a plain object, or null. */
   async get(sql, args = []) {
     const result = await db.execute({ sql, args });
-    return result.rows[0] ?? null;
+    if (!result.rows[0]) return null;
+    return toPlain(result.rows[0], result.columns);
   },
-  /** Returns all rows as an array. */
+  /** Returns all rows as plain objects. */
   async all(sql, args = []) {
     const result = await db.execute({ sql, args });
-    return result.rows;
+    return result.rows.map(row => toPlain(row, result.columns));
   },
   /** Executes an INSERT / UPDATE / DELETE. */
   async run(sql, args = []) {
