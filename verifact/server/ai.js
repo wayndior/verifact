@@ -1,83 +1,91 @@
-import OpenAI from 'openai'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath, URL } from 'url'
-import { createRequire } from 'module'
-import { execSync } from 'child_process'
-import mammoth from 'mammoth'
+// ai.js — document text extraction + OpenAI verification
+//
+// Key change from VPS version:
+//   extractText() now accepts a Buffer instead of a file path.
+//   PPTX extraction uses the `unzipper` npm package instead of the system
+//   `unzip` binary (which is unavailable on Vercel).
 
-const require = createRequire(import.meta.url)
-const pdfParse = require('pdf-parse')
+import OpenAI from 'openai';
+import mammoth from 'mammoth';
+import unzipper from 'unzipper';
+import { createRequire } from 'module';
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url))
+// pdf-parse is CommonJS — use createRequire to import it in an ESM project
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse');
 
-// Lazy-init so OPENAI_API_KEY is loaded from .env before first use
-let _openai = null
+// Lazy-init so OPENAI_API_KEY is resolved from .env before first use
+let _openai = null;
 const getOpenAI = () => {
-  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-  return _openai
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return _openai;
+};
+
+// ── Text extraction ───────────────────────────────────────────────────────────
+
+/**
+ * @param {Buffer} fileBuffer  — raw file bytes (from multer memoryStorage)
+ * @param {string} mimeType    — MIME type of the uploaded file
+ * @returns {Promise<string>}  — extracted plain text
+ */
+export async function extractText(fileBuffer, mimeType) {
+  if (mimeType === 'text/plain') {
+    return fileBuffer.toString('utf-8').trim();
+  }
+
+  if (mimeType === 'application/pdf') {
+    const data = await pdfParse(fileBuffer);
+    return data.text.trim();
+  }
+
+  if (
+    mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    mimeType === 'application/msword'
+  ) {
+    const result = await mammoth.extractRawText({ buffer: fileBuffer });
+    return result.value.trim();
+  }
+
+  if (
+    mimeType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+    mimeType === 'application/vnd.ms-powerpoint'
+  ) {
+    return extractPptxText(fileBuffer);
+  }
+
+  throw new Error(`Unsupported file type: ${mimeType}`);
 }
 
-// ── Text Extraction ───────────────────────────────────────────────────────────
+/**
+ * Extract text from a PPTX buffer using unzipper (no system binaries needed).
+ * @param {Buffer} buffer
+ * @returns {Promise<string>}
+ */
+async function extractPptxText(buffer) {
+  const directory = await unzipper.Open.buffer(buffer);
 
-export async function extractText(filePath, mimeType) {
-  const ext = path.extname(filePath).toLowerCase()
+  const slideFiles = directory.files
+    .filter((f) => /^ppt\/slides\/slide\d+\.xml$/.test(f.path))
+    .sort((a, b) => a.path.localeCompare(b.path));
 
-  // Plain text
-  if (ext === '.txt') {
-    return fs.readFileSync(filePath, 'utf-8')
-  }
+  const texts = await Promise.all(
+    slideFiles.map(async (slideFile) => {
+      const content = await slideFile.buffer();
+      const xml = content.toString('utf-8');
+      return [...xml.matchAll(/<a:t[^>]*>(.*?)<\/a:t>/gs)]
+        .map((m) => m[1])
+        .join(' ');
+    })
+  );
 
-  // PDF
-  if (ext === '.pdf') {
-    const buffer = fs.readFileSync(filePath)
-    const data = await pdfParse(buffer)
-    return data.text
-  }
-
-  // DOCX / DOC
-  if (ext === '.docx' || ext === '.doc') {
-    const buffer = fs.readFileSync(filePath)
-    const result = await mammoth.extractRawText({ buffer })
-    return result.value
-  }
-
-  // PPTX — extract text from XML inside the zip
-  if (ext === '.pptx' || ext === '.ppt') {
-    return extractPptxText(filePath)
-  }
-
-  throw new Error(`Unsupported file type: ${ext}`)
+  return texts.join('\n').trim();
 }
 
-function extractPptxText(filePath) {
-  try {
-    // Use unzip to extract slide XML, then strip tags
-    const tmpDir = `/tmp/pptx_${Date.now()}`
-    execSync(`mkdir -p ${tmpDir} && unzip -o "${filePath}" "ppt/slides/*.xml" -d ${tmpDir}`, { stdio: 'pipe' })
-    const slidesDir = path.join(tmpDir, 'ppt', 'slides')
-    if (!fs.existsSync(slidesDir)) return ''
-    const files = fs.readdirSync(slidesDir).filter(f => f.endsWith('.xml'))
-    let text = ''
-    for (const file of files) {
-      const xml = fs.readFileSync(path.join(slidesDir, file), 'utf-8')
-      // Extract text between <a:t> tags
-      const matches = xml.match(/<a:t[^>]*>(.*?)<\/a:t>/g) || []
-      text += matches.map(m => m.replace(/<[^>]+>/g, '')).join(' ') + '\n'
-    }
-    execSync(`rm -rf ${tmpDir}`, { stdio: 'pipe' })
-    return text.trim()
-  } catch (e) {
-    console.error('PPTX extraction error:', e.message)
-    return ''
-  }
-}
-
-// ── AI Verification ───────────────────────────────────────────────────────────
+// ── AI verification ───────────────────────────────────────────────────────────
 
 export async function verifyDocument(text) {
-  // Truncate to ~12k chars to stay within token limits
-  const truncated = text.slice(0, 12000)
+  // Truncate to ~12 k chars to stay within token budget
+  const truncated = text.slice(0, 12000);
 
   const prompt = `You are an academic fact-checking and plagiarism detection AI.
 
@@ -121,19 +129,17 @@ Rules:
 - Return ONLY valid JSON, no markdown, no extra text
 
 Document text:
-${truncated}`
+${truncated}`;
 
   const response = await getOpenAI().chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],
     temperature: 0,
     max_tokens: 3000,
-  })
+  });
 
-  const raw = response.choices[0].message.content.trim()
-  
-  // Strip markdown code blocks if present
-  const json = raw.replace(/^```json\n?/, '').replace(/^```\n?/, '').replace(/\n?```$/, '')
-  
-  return JSON.parse(json)
+  const raw = response.choices[0].message.content.trim();
+  // Strip markdown code fences if the model wraps the JSON
+  const json = raw.replace(/^```json\n?/, '').replace(/^```\n?/, '').replace(/\n?```$/, '');
+  return JSON.parse(json);
 }

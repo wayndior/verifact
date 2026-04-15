@@ -1,72 +1,85 @@
-import { Router } from 'express'
-import bcrypt from 'bcryptjs'
-import crypto from 'crypto'
-import db from '../db.js'
-import { sendPasswordReset } from '../email.js'
+// password.js — async version for Turso
+// Changes from original: db.prepare(…).get/run  →  await query.get/run
 
-const router = Router()
+import { Router } from 'express';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import { query } from '../db.js';
+import { sendPasswordReset } from '../email.js';
+
+const router = Router();
+
+// Generic message — same for existing and non-existing emails (no enumeration)
+const FORGOT_RESPONSE = { message: 'If that email exists, a reset link has been sent.' };
 
 // ── POST /api/password/forgot ─────────────────────────────────────────────────
 router.post('/forgot', async (req, res) => {
-  const { email } = req.body
-  if (!email) return res.status(400).json({ error: 'Email is required.' })
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email is required.' });
 
-  // Always return 200 so we don't reveal whether an email exists
-  const user = db.prepare('SELECT user_id, full_name FROM users WHERE email = ?').get(email.toLowerCase().trim())
-  if (!user) return res.json({ message: 'If that email exists, a reset link has been sent.' })
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await query.get('SELECT user_id FROM users WHERE email = ?', [normalizedEmail]);
 
-  // Invalidate any existing tokens for this user
-  db.prepare('DELETE FROM password_reset_tokens WHERE user_id = ?').run(user.user_id)
+  if (!user) return res.json(FORGOT_RESPONSE); // silent — no enumeration
 
-  // Generate secure token — expires in 1 hour
-  const token = crypto.randomBytes(32).toString('hex')
-  const expires_at = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+  // Invalidate any existing tokens for this user before issuing a new one
+  await query.run('DELETE FROM password_reset_tokens WHERE user_id = ?', [user.user_id]);
 
-  db.prepare('INSERT INTO password_reset_tokens (token, user_id, expires_at) VALUES (?, ?, ?)')
-    .run(token, user.user_id, expires_at)
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
 
-  try {
-    await sendPasswordReset(email.toLowerCase().trim(), user.full_name || 'there', token)
-  } catch (err) {
-    console.error('Failed to send reset email:', err.message)
-    // Don't expose the error to the client
+  await query.run(
+    'INSERT INTO password_reset_tokens (token, user_id, expires_at) VALUES (?, ?, ?)',
+    [token, user.user_id, expiresAt]
+  );
+
+  // Fire-and-forget — don't expose email failures to the client
+  sendPasswordReset({ email: normalizedEmail, token }).catch(console.error);
+
+  res.json(FORGOT_RESPONSE);
+});
+
+// ── GET /api/password/validate/:token ────────────────────────────────────────
+router.get('/validate/:token', async (req, res) => {
+  const row = await query.get(
+    `SELECT t.*, u.email
+     FROM password_reset_tokens t
+     JOIN users u ON t.user_id = u.user_id
+     WHERE t.token = ?`,
+    [req.params.token]
+  );
+
+  if (!row || row.used || new Date(row.expires_at) < new Date()) {
+    return res.status(400).json({ error: 'Invalid or expired reset token.' });
   }
 
-  res.json({ message: 'If that email exists, a reset link has been sent.' })
-})
-
-// ── GET /api/password/validate/:token ─────────────────────────────────────────
-router.get('/validate/:token', (req, res) => {
-  const row = db.prepare(`
-    SELECT t.*, u.email FROM password_reset_tokens t
-    JOIN users u ON t.user_id = u.user_id
-    WHERE t.token = ? AND t.used = 0 AND t.expires_at > ?
-  `).get(req.params.token, new Date().toISOString())
-
-  if (!row) return res.status(400).json({ error: 'This reset link is invalid or has expired.' })
-  res.json({ valid: true, email: row.email })
-})
+  res.json({ valid: true, email: row.email });
+});
 
 // ── POST /api/password/reset ──────────────────────────────────────────────────
 router.post('/reset', async (req, res) => {
-  const { token, password } = req.body
+  const { token, password } = req.body;
+  if (!token || !password) {
+    return res.status(400).json({ error: 'Token and password are required.' });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+  }
 
-  if (!token || !password) return res.status(400).json({ error: 'Token and password are required.' })
-  if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' })
+  const row = await query.get(
+    'SELECT * FROM password_reset_tokens WHERE token = ?',
+    [token]
+  );
 
-  const row = db.prepare(`
-    SELECT * FROM password_reset_tokens
-    WHERE token = ? AND used = 0 AND expires_at > ?
-  `).get(token, new Date().toISOString())
+  if (!row || row.used || new Date(row.expires_at) < new Date()) {
+    return res.status(400).json({ error: 'Invalid or expired reset token.' });
+  }
 
-  if (!row) return res.status(400).json({ error: 'This reset link is invalid or has expired.' })
+  const passwordHash = await bcrypt.hash(password, 12);
+  await query.run('UPDATE users SET password_hash = ? WHERE user_id = ?', [passwordHash, row.user_id]);
+  await query.run('UPDATE password_reset_tokens SET used = 1 WHERE token = ?', [token]);
 
-  const password_hash = await bcrypt.hash(password, 12)
+  res.json({ message: 'Password reset successfully.' });
+});
 
-  db.prepare('UPDATE users SET password_hash = ? WHERE user_id = ?').run(password_hash, row.user_id)
-  db.prepare('UPDATE password_reset_tokens SET used = 1 WHERE token = ?').run(token)
-
-  res.json({ message: 'Password updated successfully.' })
-})
-
-export default router
+export default router;
