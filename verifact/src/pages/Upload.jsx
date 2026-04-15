@@ -86,8 +86,9 @@ const StudentUpload = () => {
       const data = await res.json()
       if (res.status === 429) { setErrorMsg(data.error); setPhase('limit'); return }
       if (!res.ok) { setErrorMsg(data.error || 'Upload failed.'); setPhase('error'); return }
-      setPhase('processing')
-      await pollStatus(data.document_id)
+      // Backend processes synchronously — full results are already in the response
+      setResult({ ...data, file_name: file.name })
+      setPhase('done')
     } catch (e) {
       setErrorMsg('Something went wrong. Please try again.')
       setPhase('error')
