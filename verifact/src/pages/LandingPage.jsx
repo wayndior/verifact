@@ -22,11 +22,12 @@ const icons = {
   eye:        ['M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z', 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'],
 };
 
-const stats = [
-  { value: '10K+', label: 'Documents verified' },
-  { value: '98%', label: 'Accuracy rate' },
-  { value: '2,400+', label: 'Educators using Verifact' },
-  { value: '<60s', label: 'Average verification time' },
+// Honest trust indicators — no fabricated metrics.
+const trustPoints = [
+  { value: 'SHA-256', label: 'Cryptographic certificates' },
+  { value: 'GPT-4o', label: 'Claim verification engine' },
+  { value: 'PDF · DOCX · PPTX', label: 'Supported formats' },
+  { value: 'Tamper-proof', label: 'QR-verified results' },
 ];
 
 const features = [
@@ -115,12 +116,12 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── Stats bar ── */}
+      {/* ── Trust bar (honest capabilities, not vanity metrics) ── */}
       <div style={{ borderTop: '1px solid #F1F5F9', borderBottom: '1px solid #F1F5F9', background: '#F8FAFC' }}>
         <div className="lp-stats">
-          {stats.map((s) => (
+          {trustPoints.map((s) => (
             <div key={s.label} className="lp-stat">
-              <div style={{ fontSize: '1.8rem', fontWeight: '700', color: '#0F172A', letterSpacing: '-0.03em' }}>{s.value}</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0F172A', letterSpacing: '-0.02em' }}>{s.value}</div>
               <div style={{ fontSize: '0.85rem', color: '#64748B', marginTop: '4px' }}>{s.label}</div>
             </div>
           ))}
@@ -193,8 +194,8 @@ const LandingPage = () => {
         <h2 style={{ fontSize: '2.5rem', fontWeight: '700', color: 'white', letterSpacing: '-0.03em', marginBottom: '16px' }}>
           Ready to verify your work?
         </h2>
-        <p style={{ color: '#64748B', marginBottom: '36px', fontSize: '1rem', maxWidth: '420px', margin: '0 auto 36px' }}>
-          Join students and educators who trust Verifact for academic integrity.
+        <p style={{ color: '#64748B', marginBottom: '36px', fontSize: '1rem', maxWidth: '460px', margin: '0 auto 36px' }}>
+          A modern verification toolkit for students and educators. Free to start — no credit card required.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           <button onClick={() => navigate('/dashboard')} style={{

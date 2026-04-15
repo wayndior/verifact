@@ -20,6 +20,8 @@ import Upload from './pages/Upload'
 import Reports from './pages/Reports'
 import Certificates from './pages/Certificates'
 import Profile from './pages/Profile'
+import Admin from './pages/Admin'
+import VerifyEmail from './pages/VerifyEmail'
 
 // Protects app routes — redirects to /login if not authenticated
 const ProtectedRoute = ({ children }) => {
@@ -46,6 +48,7 @@ function App() {
         <Route path="/privacy"  element={<Privacy />} />
         <Route path="/terms"    element={<Terms />} />
         <Route path="/contact"  element={<Contact />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
         {/* Protected app routes */}
         <Route element={
@@ -57,6 +60,7 @@ function App() {
           <Route path="/certificates" element={<Certificates />} />
           <Route path="/classes"      element={<Classes />} />
           <Route path="/profile"      element={<Profile />} />
+          <Route path="/admin"        element={<Admin />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

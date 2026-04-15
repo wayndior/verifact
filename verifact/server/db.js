@@ -67,7 +67,16 @@ export async function initDb() {
       school_id    TEXT,
       address      TEXT,
       email_verified INTEGER NOT NULL DEFAULT 0,
+      is_admin     INTEGER NOT NULL DEFAULT 0,
       created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS email_verification_tokens (
+      token      TEXT PRIMARY KEY,
+      user_id    TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      used       INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
     )`,
     `CREATE TABLE IF NOT EXISTS documents (
       document_id        TEXT PRIMARY KEY,
@@ -126,10 +135,29 @@ export async function initDb() {
     `CREATE INDEX IF NOT EXISTS idx_documents_user_id     ON documents(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_certificates_user_id  ON certificates(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_password_tokens_token ON password_reset_tokens(token)`,
+    `CREATE INDEX IF NOT EXISTS idx_email_verification_user ON email_verification_tokens(user_id)`,
   ];
 
   for (const sql of statements) {
     await db.execute(sql);
+  }
+
+  // ── Additive migrations for databases created before a column existed ──────
+  // ALTER TABLE ADD COLUMN is idempotent-by-catch: if the column already
+  // exists the statement errors, which we swallow. Never remove or reorder
+  // these — they document the schema's history.
+  const migrations = [
+    `ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0`,
+  ];
+  for (const sql of migrations) {
+    try {
+      await db.execute(sql);
+    } catch (err) {
+      // "duplicate column name" is expected once the migration has run;
+      // anything else should surface.
+      if (!/duplicate column/i.test(err?.message ?? '')) throw err;
+    }
   }
 }
 

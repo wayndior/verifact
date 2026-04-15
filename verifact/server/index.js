@@ -10,6 +10,7 @@ import documentsRouter from './routes/documents.js';
 import certificatesRouter from './routes/certificates.js';
 import passwordRouter from './routes/password.js';
 import classesRouter from './routes/classes.js';
+import adminRouter from './routes/admin.js';
 
 const app = express();
 
@@ -17,22 +18,26 @@ const app = express();
 app.set('trust proxy', 1);
 
 // ── Security headers ──────────────────────────────────────────────────────────
+// Build CSP directives dynamically so `upgrade-insecure-requests` can be
+// omitted entirely in dev — helmet rejects `false` as a directive value.
+const cspDirectives = {
+  defaultSrc: ["'self'"],
+  scriptSrc: ["'self'"],
+  // React renders inline styles; keep 'unsafe-inline' only for style-src
+  styleSrc: ["'self'", "'unsafe-inline'"],
+  imgSrc: ["'self'", 'data:', 'blob:'],
+  connectSrc: ["'self'"],
+  fontSrc: ["'self'"],
+  objectSrc: ["'none'"],
+  frameAncestors: ["'none'"],
+};
+if (process.env.NODE_ENV === 'production') {
+  cspDirectives.upgradeInsecureRequests = [];
+}
+
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        // React renders inline styles; keep 'unsafe-inline' only for style-src
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", 'data:', 'blob:'],
-        connectSrc: ["'self'"],
-        fontSrc: ["'self'"],
-        objectSrc: ["'none'"],
-        frameAncestors: ["'none'"],
-        upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : false,
-      },
-    },
+    contentSecurityPolicy: { directives: cspDirectives },
     // Keep COEP off — QR code data-URLs and cross-origin assets need it disabled
     crossOriginEmbedderPolicy: false,
   })
@@ -91,6 +96,7 @@ app.use('/api/documents', documentsRouter);
 app.use('/api/certificates', certificatesRouter);
 app.use('/api/password', authLimiter, passwordRouter);
 app.use('/api/classes', generalLimiter, classesRouter);
+app.use('/api/admin', generalLimiter, adminRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

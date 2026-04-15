@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AdvisoryBanner from './AdvisoryBanner';
+import EmailVerificationBanner from './EmailVerificationBanner';
+import OnboardingTour from './OnboardingTour';
 import './AppLayout.css';
 
 const Icon = ({ paths, size = 20 }) => (
@@ -17,6 +19,7 @@ const icons = {
   certificates: ['M22 11.08V12a10 10 0 1 1-5.93-9.14', 'M22 4L12 14.01l-3-3'],
   classes:      ['M22 10l-10-5-10 5 10 5 10-5z', 'M6 12v5c0 0 3 3 6 3s6-3 6-3v-5'],
   profile:      ['M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2', 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
+  admin:        ['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', 'M9 12l2 2 4-4'],
   home:         ['M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4', 'M16 17l5-5-5-5', 'M21 12H9'],
   chevronLeft:  ['M15 18l-6-6 6-6'],
   chevronRight: ['M9 18l6-6-6-6'],
@@ -38,6 +41,9 @@ const AppLayout = () => {
     { path: '/certificates', label: 'Certificates', icon: icons.certificates },
     { path: '/classes',      label: 'Classes',      icon: icons.classes },
     { path: '/profile',      label: 'Profile',      icon: icons.profile },
+    // Admin link is appended only for admin users — gated on user.is_admin
+    // so the nav never flashes the link for non-admins during the token load.
+    ...(user?.is_admin ? [{ path: '/admin', label: 'Admin', icon: icons.admin }] : []),
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -100,8 +106,10 @@ const AppLayout = () => {
         </div>
 
         <div className="content-area">
+          <EmailVerificationBanner />
           <AdvisoryBanner />
           <Outlet />
+          <OnboardingTour />
         </div>
       </div>
     </div>

@@ -83,9 +83,70 @@ async function extractPptxText(buffer) {
 
 // ── AI verification ───────────────────────────────────────────────────────────
 
-export async function verifyDocument(text) {
-  // Truncate to ~12 k chars to stay within token budget
-  const truncated = text.slice(0, 12000);
+/**
+ * Default character cap. Callers can pass a larger cap via `maxChars` (e.g.
+ * educator plans get more headroom). Keep this conservative — the larger
+ * the prompt, the more the model stalls or hits 429s on cold starts.
+ */
+const DEFAULT_MAX_CHARS = 12000;
+
+/**
+ * Retry classification: only retry network blips / rate limits / 5xx. Never
+ * retry 4xx errors other than 429 — those are deterministic failures that
+ * will never resolve by asking again.
+ */
+function isRetryableAIError(err) {
+  if (!err) return false;
+  const status = err.status ?? err.response?.status;
+  if (status === 429) return true;
+  if (status && status >= 500 && status < 600) return true;
+  // openai-node wraps network errors as APIConnectionError / APIConnectionTimeoutError
+  const name = err.constructor?.name ?? '';
+  if (/Connection|Timeout/i.test(name)) return true;
+  // Fall through: anything without a status is almost certainly a transport error
+  if (!status) return true;
+  return false;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Call the OpenAI chat API with exponential backoff.
+ * Attempts: 3  (so up to 2 retries after the first call).
+ * Backoff:  800ms → 2s → 4s (with 20% jitter).
+ */
+async function callOpenAIWithRetry(params, attempts = 3) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await getOpenAI().chat.completions.create(params);
+    } catch (err) {
+      lastErr = err;
+      if (i === attempts - 1 || !isRetryableAIError(err)) throw err;
+      const backoffMs = Math.round((800 * Math.pow(2, i)) * (0.8 + Math.random() * 0.4));
+      // eslint-disable-next-line no-console
+      console.warn(`[ai] retry ${i + 1}/${attempts - 1} after ${backoffMs}ms —`, err.message);
+      await sleep(backoffMs);
+    }
+  }
+  throw lastErr;
+}
+
+/**
+ * Verify a document. Returns an object with the parsed AI analysis AND
+ * metadata describing whether the input had to be truncated so the frontend
+ * can warn the user. Never throws on "no result" — it returns a structured
+ * error wrapped in a thrown Error for the route handler to catch and map.
+ *
+ * @param {string} text      — extracted document text
+ * @param {object} [options]
+ * @param {number} [options.maxChars=DEFAULT_MAX_CHARS] — character cap
+ * @returns {Promise<{ result: object, truncated: boolean, originalLength: number, usedLength: number }>}
+ */
+export async function verifyDocument(text, { maxChars = DEFAULT_MAX_CHARS } = {}) {
+  const originalLength = text.length;
+  const truncated = originalLength > maxChars;
+  const inputText = truncated ? text.slice(0, maxChars) : text;
 
   const prompt = `You are an academic fact-checking and plagiarism detection AI.
 
@@ -129,26 +190,43 @@ Rules:
 - Return ONLY valid JSON, no markdown, no extra text
 
 Document text:
-${truncated}`;
+${inputText}`;
 
-  const response = await getOpenAI().chat.completions.create({
+  const response = await callOpenAIWithRetry({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],
     temperature: 0,
     max_tokens: 3000,
+    // JSON mode — forces the model to return valid JSON, which eliminates
+    // the fragile markdown-fence stripping and most parse failures.
+    response_format: { type: 'json_object' },
   });
 
   const raw = response.choices[0]?.message?.content?.trim();
   if (!raw) {
     throw new Error('AI returned an empty response. Please try again.');
   }
-  // Strip markdown code fences if the model wraps the JSON
+  // Strip markdown code fences if the model wraps the JSON (defensive — JSON
+  // mode should prevent this, but older models occasionally slip up).
   const json = raw.replace(/^```json\n?/, '').replace(/^```\n?/, '').replace(/\n?```$/, '');
+  let parsed;
   try {
-    return JSON.parse(json);
+    parsed = JSON.parse(json);
   } catch {
     throw new Error(
       'AI returned invalid analysis (could not parse JSON). Try again with a shorter document or different file.'
     );
   }
+
+  // Light sanity check: the route relies on .summary.overallScore existing.
+  if (!parsed?.summary || typeof parsed.summary.overallScore !== 'number') {
+    throw new Error('AI returned an incomplete analysis. Please try again.');
+  }
+
+  return {
+    result: parsed,
+    truncated,
+    originalLength,
+    usedLength: inputText.length,
+  };
 }

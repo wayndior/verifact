@@ -49,6 +49,46 @@ export async function sendPasswordReset(email, name, token) {
   return { ok: true }
 }
 
+export async function sendEmailVerification(email, name, token) {
+  const resend = getResend()
+  const verifyUrl = `${BASE_URL}/verify-email/${token}`
+
+  if (!resend) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[DEV] Email verification link for ${email}: ${verifyUrl}`)
+    }
+    return { ok: true, dev: true }
+  }
+
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: 'Confirm your Verifact email',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <body style="margin:0;padding:0;background:#F8FAFC;font-family:'Inter',-apple-system,sans-serif;">
+        <div style="max-width:520px;margin:40px auto;background:white;border-radius:12px;border:1px solid #E2E8F0;overflow:hidden;">
+          <div style="background:#0F172A;padding:28px 32px;">
+            <h1 style="color:white;margin:0;font-size:1.2rem;font-weight:700;letter-spacing:-0.02em;">Verifact</h1>
+          </div>
+          <div style="padding:32px;">
+            <h2 style="color:#0F172A;margin:0 0 12px;font-size:1.3rem;font-weight:700;">Confirm your email</h2>
+            <p style="color:#64748B;line-height:1.6;margin:0 0 28px;">Hi ${name}, one quick step to finish setting up your Verifact account — click the button below to confirm your email address.</p>
+            <a href="${verifyUrl}" style="display:inline-block;padding:13px 28px;background:#22C55E;color:white;border-radius:9px;font-weight:600;font-size:0.95rem;text-decoration:none;">Confirm Email</a>
+            <p style="color:#94A3B8;font-size:0.82rem;margin:24px 0 0;line-height:1.6;">This link expires in <strong>24 hours</strong>. If you didn't create a Verifact account, you can safely ignore this email.</p>
+            <p style="color:#CBD5E0;font-size:0.78rem;margin:12px 0 0;">Or copy this link: <span style="color:#475569;font-family:monospace;word-break:break-all;">${verifyUrl}</span></p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  })
+
+  if (error) throw new Error(error.message)
+  return { ok: true }
+}
+
 export async function sendWelcome(email, name) {
   const resend = getResend()
   if (!resend) {

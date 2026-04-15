@@ -51,6 +51,10 @@ const Register = () => {
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Registration failed.'); return }
+      // Flag for OnboardingTour — picked up on first render inside AppLayout.
+      if (data.user?.user_id) {
+        localStorage.setItem('vf_onboarding_pending', data.user.user_id)
+      }
       login(data.token, data.user)
       navigate('/dashboard')
     } catch {

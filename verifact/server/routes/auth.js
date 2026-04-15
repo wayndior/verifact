@@ -6,14 +6,31 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db.js';
-import { sendWelcome } from '../email.js';
+import { sendWelcome, sendEmailVerification } from '../email.js';
 
 const router = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) throw new Error('JWT_SECRET is not set');
+
+// ── Email verification token helpers ─────────────────────────────────────────
+// Tokens live in email_verification_tokens. Expire after 24h. One unused
+// token per user at a time — issuing a new one deletes the old.
+const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
+
+async function issueEmailVerificationToken(userId) {
+  await query.run('DELETE FROM email_verification_tokens WHERE user_id = ?', [userId]);
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + EMAIL_VERIFY_TTL_MS).toISOString();
+  await query.run(
+    'INSERT INTO email_verification_tokens (token, user_id, expires_at) VALUES (?, ?, ?)',
+    [token, userId, expiresAt]
+  );
+  return token;
+}
 
 // ── POST /api/auth/register ───────────────────────────────────────────────────
 router.post('/register', async (req, res) => {
@@ -65,12 +82,23 @@ router.post('/register', async (req, res) => {
     { expiresIn: '7d' }
   );
 
-  // Fire-and-forget — don't let an email failure block registration
+  // Fire-and-forget — don't let an email failure block registration.
+  // Welcome goes out immediately; verification is a separate email so the
+  // recipient sees the "Confirm" CTA front-and-center.
   sendWelcome(normalizedEmail, full_name.trim()).catch(console.error);
+  issueEmailVerificationToken(userId)
+    .then((verifyToken) => sendEmailVerification(normalizedEmail, full_name.trim(), verifyToken))
+    .catch(console.error);
 
   res.status(201).json({
     token,
-    user: { user_id: userId, email: normalizedEmail, full_name: full_name.trim(), role },
+    user: {
+      user_id: userId,
+      email: normalizedEmail,
+      full_name: full_name.trim(),
+      role,
+      email_verified: 0,
+    },
   });
 });
 
@@ -119,7 +147,7 @@ const requireAuth = (req, res, next) => {
 router.get('/me', requireAuth, async (req, res) => {
   const user = await query.get(
     `SELECT user_id, email, full_name, country, role, institution,
-            school_id, address, email_verified, created_at
+            school_id, address, email_verified, is_admin, created_at
      FROM users WHERE user_id = ?`,
     [req.user.user_id]
   );
@@ -152,11 +180,58 @@ router.put('/profile', requireAuth, async (req, res) => {
   );
   const updated = await query.get(
     `SELECT user_id, email, full_name, country, role, institution,
-            school_id, address, email_verified, created_at
+            school_id, address, email_verified, is_admin, created_at
      FROM users WHERE user_id = ?`,
     [req.user.user_id]
   );
   res.json({ user: updated });
+});
+
+// ── POST /api/auth/verify-email/resend ───────────────────────────────────────
+// Issues a fresh token and re-sends the verification email. No-op (but still
+// returns 200) if the user is already verified — no user enumeration.
+router.post('/verify-email/resend', requireAuth, async (req, res) => {
+  const user = await query.get(
+    'SELECT user_id, email, full_name, email_verified FROM users WHERE user_id = ?',
+    [req.user.user_id]
+  );
+  if (!user) return res.status(404).json({ error: 'User not found.' });
+  if (user.email_verified) {
+    return res.json({ message: 'Email already verified.', already: true });
+  }
+
+  const token = await issueEmailVerificationToken(user.user_id);
+  // Fire-and-forget — surface failures in logs only.
+  sendEmailVerification(user.email, user.full_name, token).catch(console.error);
+  res.json({ message: 'Verification email sent.' });
+});
+
+// ── GET /api/auth/verify-email/:token ────────────────────────────────────────
+// Consumes a verification token. Idempotent: re-clicking a used-but-valid
+// link returns success so users don't see scary error pages.
+router.get('/verify-email/:token', async (req, res) => {
+  const row = await query.get(
+    `SELECT t.*, u.email_verified
+     FROM email_verification_tokens t
+     JOIN users u ON t.user_id = u.user_id
+     WHERE t.token = ?`,
+    [req.params.token]
+  );
+
+  if (!row) {
+    return res.status(400).json({ error: 'Invalid or expired verification link.' });
+  }
+  if (new Date(row.expires_at) < new Date()) {
+    return res.status(400).json({ error: 'This verification link has expired. Request a new one.' });
+  }
+  // Already used AND already verified → treat as success (idempotent).
+  if (row.used && row.email_verified) {
+    return res.json({ message: 'Email already verified.', verified: true });
+  }
+
+  await query.run('UPDATE email_verification_tokens SET used = 1 WHERE token = ?', [req.params.token]);
+  await query.run('UPDATE users SET email_verified = 1 WHERE user_id = ?', [row.user_id]);
+  res.json({ message: 'Email verified successfully.', verified: true });
 });
 
 export default router;
