@@ -18,15 +18,15 @@ const db = createClient({
 
 // ── Thin query helpers ────────────────────────────────────────────────────────
 
-// Convert a libsql Row object into a plain JS object so that destructuring,
-// spread, and Object.keys() all work correctly in route handlers.
+// Convert a libsql Row object into a plain JS object.
+// Uses index-based access (row[i]) which is reliable across all libsql versions.
 function toPlain(row, columns) {
   if (!row) return null;
   const obj = {};
-  for (const col of columns) {
+  columns.forEach((col, i) => {
     const name = typeof col === 'string' ? col : col.name;
-    obj[name] = row[name];
-  }
+    obj[name] = row[i];
+  });
   return obj;
 }
 
