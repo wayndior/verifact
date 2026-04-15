@@ -1,0 +1,201 @@
+/* ── Landing page responsive overrides ── */
+
+.lp-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 56px;
+  height: 64px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.lp-nav {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.lp-nav-links {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+}
+
+.lp-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #0F172A;
+  padding: 4px;
+}
+
+.lp-mobile-menu {
+  display: none;
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  background: white;
+  border-bottom: 1px solid #E2E8F0;
+  padding: 12px 20px 20px;
+  z-index: 100;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.lp-mobile-menu.open {
+  display: flex;
+}
+
+.lp-mobile-menu a,
+.lp-mobile-menu button {
+  display: block;
+  width: 100%;
+  padding: 13px 16px;
+  text-align: left;
+  color: #0F172A;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.lp-mobile-menu a:hover,
+.lp-mobile-menu button:hover {
+  background: #F8FAFC;
+}
+
+.lp-mobile-menu .mobile-cta {
+  background: #0F172A;
+  color: white;
+  text-align: center;
+  margin-top: 8px;
+  border-radius: 9px;
+  font-weight: 600;
+}
+
+.lp-hero {
+  padding: 120px 56px 96px;
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.lp-hero h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  margin-bottom: 22px;
+}
+
+.lp-hero-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.lp-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.lp-stat {
+  padding: 28px 20px;
+  text-align: center;
+  border-right: 1px solid #E2E8F0;
+}
+
+.lp-stat:last-child {
+  border-right: none;
+}
+
+.lp-section {
+  padding: 96px 56px;
+}
+
+.lp-section-narrow {
+  padding: 96px 56px;
+  background: #F8FAFC;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .lp-header {
+    padding: 0 20px;
+    height: 56px;
+  }
+
+  .lp-nav-links {
+    display: none;
+  }
+
+  .lp-hamburger {
+    display: flex;
+  }
+
+  .lp-hero {
+    padding: 60px 24px 56px;
+  }
+
+  .lp-hero h1 {
+    font-size: 2.4rem;
+    letter-spacing: -0.03em;
+  }
+
+  .lp-hero-btns {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lp-hero-btns a,
+  .lp-hero-btns button {
+    text-align: center;
+    justify-content: center;
+  }
+
+  .lp-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .lp-stat {
+    padding: 20px 12px;
+    border-right: none;
+    border-bottom: 1px solid #E2E8F0;
+  }
+
+  .lp-stat:nth-child(odd) {
+    border-right: 1px solid #E2E8F0;
+  }
+
+  .lp-stat:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
+
+  .lp-section,
+  .lp-section-narrow {
+    padding: 56px 20px;
+  }
+
+  .lp-footer {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+    padding: 24px 20px;
+  }
+}

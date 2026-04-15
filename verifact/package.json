@@ -1,0 +1,60 @@
+{
+  "name": "verifact",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI-powered factual verification and cryptographic certification.",
+  "main": "server/start.js",
+  "scripts": {
+    "start": "node server/start.js",
+    "dev": "vite --port 3000",
+    "build": "vite build",
+    "preview": "vite preview --port 5000",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@sentry/node": "^7.110.1",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^9.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.0.0-beta.2",
+    "express-rate-limit": "^7.2.0",
+    "express-validator": "^7.0.1",
+    "fs": "^0.0.1-security",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.12.0",
+    "multer": "^2.1.1",
+    "openai": "^6.34.0",
+    "path": "^0.12.0",
+    "pdf-parse": "^1.1.1",
+    "qrcode": "^1.5.4",
+    "resend": "^6.11.0",
+    "url": "^0.11.3",
+    "uuid": "^9.0.1",
+    "vite": "^5.0.12"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "nodemon": "^3.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/verifact/verifact.git"
+  },
+  "keywords": [
+    "verification",
+    "ai",
+    "certification",
+    "education",
+    "saas"
+  ],
+  "author": "Verifact Team/Kevin",
+  "license": "UNLICENSED"
+}
