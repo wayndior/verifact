@@ -58,19 +58,6 @@ const StudentUpload = () => {
 
   const handleFile = (f) => { if (f) setFile(f) }
 
-  const pollStatus = async (document_id) => {
-    for (let i = 0; i < 60; i++) {
-      await new Promise(r => setTimeout(r, 3000))
-      const res = await fetch(`/api/documents/status/${document_id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const data = await res.json()
-      if (data.upload_status === 'completed') { setResult(data); setPhase('done'); return }
-      if (data.upload_status === 'error') { setErrorMsg(data.processing_error || 'Processing failed.'); setPhase('error'); return }
-    }
-    setErrorMsg('Processing timed out. Please try again.'); setPhase('error')
-  }
-
   const handleSubmit = async () => {
     if (!file) return
     setPhase('uploading')
@@ -319,17 +306,6 @@ const EducatorUpload = () => {
   const handleFile = (f) => { if (f) setFile(f) }
   const reset = () => { setFile(null); setPhase('idle'); setResult(null); setErrorMsg(''); setStudentName('') }
 
-  const pollStatus = async (document_id) => {
-    for (let i = 0; i < 60; i++) {
-      await new Promise(r => setTimeout(r, 3000))
-      const res = await fetch(`/api/documents/status/${document_id}`, { headers: { Authorization: `Bearer ${token}` } })
-      const data = await res.json()
-      if (data.upload_status === 'completed') { setResult(data); setPhase('done'); return }
-      if (data.upload_status === 'error') { setErrorMsg(data.processing_error || 'Processing failed.'); setPhase('error'); return }
-    }
-    setErrorMsg('Processing timed out.'); setPhase('error')
-  }
-
   const handleSubmit = async () => {
     if (!file) return
     setPhase('processing')
@@ -340,7 +316,9 @@ const EducatorUpload = () => {
       const data = await res.json()
       if (res.status === 429) { setErrorMsg(data.error); setPhase('limit'); return }
       if (!res.ok) { setErrorMsg(data.error || 'Upload failed.'); setPhase('error'); return }
-      await pollStatus(data.document_id)
+      // Backend processes synchronously — same contract as student upload
+      setResult({ ...data, file_name: file.name })
+      setPhase('done')
     } catch { setErrorMsg('Something went wrong.'); setPhase('error') }
   }
 

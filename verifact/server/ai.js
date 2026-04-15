@@ -138,8 +138,17 @@ ${truncated}`;
     max_tokens: 3000,
   });
 
-  const raw = response.choices[0].message.content.trim();
+  const raw = response.choices[0]?.message?.content?.trim();
+  if (!raw) {
+    throw new Error('AI returned an empty response. Please try again.');
+  }
   // Strip markdown code fences if the model wraps the JSON
   const json = raw.replace(/^```json\n?/, '').replace(/^```\n?/, '').replace(/\n?```$/, '');
-  return JSON.parse(json);
+  try {
+    return JSON.parse(json);
+  } catch {
+    throw new Error(
+      'AI returned invalid analysis (could not parse JSON). Try again with a shorter document or different file.'
+    );
+  }
 }

@@ -88,8 +88,8 @@ const StudentDashboard = ({ user, navigate, token }) => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '16px', marginBottom: '28px' }}>
         <StatCard label="Certificates Earned" value={certs} accent={certs > 0 ? '#16A34A' : '#0F172A'} icon={icons.cert} sub="Docs that passed (80+)" />
         <StatCard label="Best Score" value={bestScore != null ? `${bestScore}` : '—'} icon={icons.star} sub="Your top document" />
-        <StatCard label="Failed Verifications" value={completed.filter(d => d.verification_score < 0.5).length} accent={completed.filter(d => d.verification_score < 0.5).length > 0 ? '#EF4444' : '#0F172A'} icon={icons.alert} sub="Score below 50" />
-        <StatCard label="Needs Review" value={completed.filter(d => d.verification_score >= 0.5 && d.verification_score < 0.8).length} icon={icons.flag} sub="Score 50–79" />
+        <StatCard label="Failed Verifications" value={completed.filter(d => d.verification_score < 50).length} accent={completed.filter(d => d.verification_score < 50).length > 0 ? '#EF4444' : '#0F172A'} icon={icons.alert} sub="Score below 50" />
+        <StatCard label="Needs Review" value={completed.filter(d => d.verification_score >= 50 && d.verification_score < 80).length} icon={icons.flag} sub="Score 50–79" />
       </div>
 
       {/* Accuracy breakdown + tip */}
