@@ -11,6 +11,7 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Register from './pages/Register'
 import AppLayout from './components/AppLayout'
+import Classes from './pages/Classes'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import Contact from './pages/Contact'
@@ -50,11 +51,12 @@ function App() {
         <Route element={
           <ProtectedRoute><AppLayout /></ProtectedRoute>
         }>
-          <Route path="/dashboard"   element={<Dashboard />} />
-          <Route path="/upload"      element={<Upload />} />
-          <Route path="/reports"     element={<Reports />} />
+          <Route path="/dashboard"    element={<Dashboard />} />
+          <Route path="/upload"       element={<Upload />} />
+          <Route path="/reports"      element={<Reports />} />
           <Route path="/certificates" element={<Certificates />} />
-          <Route path="/profile"     element={<Profile />} />
+          <Route path="/classes"      element={<Classes />} />
+          <Route path="/profile"      element={<Profile />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

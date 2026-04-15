@@ -9,6 +9,7 @@ import authRouter from './routes/auth.js';
 import documentsRouter from './routes/documents.js';
 import certificatesRouter from './routes/certificates.js';
 import passwordRouter from './routes/password.js';
+import classesRouter from './routes/classes.js';
 
 const app = express();
 
@@ -89,6 +90,7 @@ app.use('/api/auth', authLimiter, authRouter);
 app.use('/api/documents', documentsRouter);
 app.use('/api/certificates', certificatesRouter);
 app.use('/api/password', authLimiter, passwordRouter);
+app.use('/api/classes', classesRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

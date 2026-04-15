@@ -15,6 +15,7 @@ const icons = {
   upload:       ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12'],
   reports:      ['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M16 13H8', 'M16 17H8', 'M10 9H8'],
   certificates: ['M22 11.08V12a10 10 0 1 1-5.93-9.14', 'M22 4L12 14.01l-3-3'],
+  classes:      ['M22 10l-10-5-10 5 10 5 10-5z', 'M6 12v5c0 0 3 3 6 3s6-3 6-3v-5'],
   profile:      ['M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2', 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
   home:         ['M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4', 'M16 17l5-5-5-5', 'M21 12H9'],
   chevronLeft:  ['M15 18l-6-6 6-6'],
@@ -35,6 +36,7 @@ const AppLayout = () => {
     { path: '/upload',       label: 'Upload',       icon: icons.upload },
     { path: '/reports',      label: 'Reports',      icon: icons.reports },
     { path: '/certificates', label: 'Certificates', icon: icons.certificates },
+    { path: '/classes',      label: 'Classes',      icon: icons.classes },
     { path: '/profile',      label: 'Profile',      icon: icons.profile },
   ];
 
