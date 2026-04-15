@@ -80,8 +80,8 @@ const HowItWorks = () => {
       <footer style={{ background: '#0F172A', borderTop: '1px solid #1E293B', padding: '28px 56px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ color: '#475569', fontSize: '0.85rem' }}>© 2026 Verifact. All rights reserved.</span>
         <div style={{ display: 'flex', gap: '28px' }}>
-          {['Privacy', 'Terms', 'Contact'].map(link => (
-            <a key={link} href="#" style={{ color: '#475569', fontSize: '0.85rem', fontWeight: '500' }}>{link}</a>
+          {[['Privacy', '/privacy'], ['Terms', '/terms'], ['Contact', '/contact']].map(([label, path]) => (
+            <span key={label} onClick={() => navigate(path)} style={{ color: '#475569', fontSize: '0.85rem', fontWeight: '500', cursor: 'pointer' }}>{label}</span>
           ))}
         </div>
       </footer>

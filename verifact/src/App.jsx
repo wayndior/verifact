@@ -11,6 +11,9 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Register from './pages/Register'
 import AppLayout from './components/AppLayout'
+import Privacy from './pages/Privacy'
+import Terms from './pages/Terms'
+import Contact from './pages/Contact'
 import Dashboard from './pages/Dashboard'
 import Upload from './pages/Upload'
 import Reports from './pages/Reports'
@@ -39,6 +42,9 @@ function App() {
         <Route path="/verify/:id"          element={<Verify />} />
         <Route path="/forgot-password"      element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/privacy"  element={<Privacy />} />
+        <Route path="/terms"    element={<Terms />} />
+        <Route path="/contact"  element={<Contact />} />
 
         {/* Protected app routes */}
         <Route element={

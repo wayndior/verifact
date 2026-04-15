@@ -127,7 +127,7 @@ const Certificates = () => {
             <Icon paths={icons.shield} size={24} />
           </div>
           <h3 style={{ color: '#0F172A', margin: '0 0 8px', fontWeight: '600' }}>No certificates yet</h3>
-          <p style={{ color: '#94A3B8', fontSize: '0.875rem', margin: '0 0 6px' }}>Certificates are auto-issued when your document scores 90+ with less than 10% plagiarism.</p>
+          <p style={{ color: '#94A3B8', fontSize: '0.875rem', margin: '0 0 6px' }}>Certificates are auto-issued when your document scores 80+ with less than 10% plagiarism.</p>
           <p style={{ color: '#94A3B8', fontSize: '0.875rem', margin: '0 0 24px' }}>Keep submitting and improving your work.</p>
           <button onClick={() => navigate('/upload')} style={{ padding: '10px 24px', background: '#22C55E', color: 'white', borderRadius: '8px', fontWeight: '600', fontSize: '0.875rem' }}>
             Upload a document

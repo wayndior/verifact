@@ -217,8 +217,8 @@ const LandingPage = () => {
       }}>
         <span style={{ color: '#475569', fontSize: '0.85rem' }}>© 2026 Verifact. All rights reserved.</span>
         <div style={{ display: 'flex', gap: '28px' }}>
-          {['Privacy', 'Terms', 'Contact'].map(link => (
-            <a key={link} href="#" style={{ color: '#475569', fontSize: '0.85rem', fontWeight: '500', textDecoration: 'none' }}>{link}</a>
+          {[['Privacy', '/privacy'], ['Terms', '/terms'], ['Contact', '/contact']].map(([label, path]) => (
+            <span key={label} onClick={() => navigate(path)} style={{ color: '#475569', fontSize: '0.85rem', fontWeight: '500', cursor: 'pointer' }}>{label}</span>
           ))}
         </div>
       </footer>
