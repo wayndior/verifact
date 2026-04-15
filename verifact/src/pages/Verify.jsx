@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import AdvisoryBanner from '../components/AdvisoryBanner'
 
 const Icon = ({ paths, size = 24, strokeWidth = 1.75 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
@@ -53,6 +54,9 @@ const Verify = () => {
 
   const scoreColor = cert.score >= 90 ? '#22C55E' : '#F59E0B'
   const issuedDate = new Date(cert.issued_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  // DB stores plagiarism as 0–100; older rows might still be 0–1
+  const plagiarismPct =
+    cert.plagiarism != null && cert.plagiarism <= 1 ? Math.round(cert.plagiarism * 100) : Math.round(cert.plagiarism ?? 0)
 
   return (
     <div style={{ minHeight: '100vh', background: '#F8FAFC', fontFamily: "'Inter', sans-serif" }}>
@@ -63,6 +67,7 @@ const Verify = () => {
       </header>
 
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '64px 24px' }}>
+        <AdvisoryBanner />
 
         {/* Verified banner */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '14px', padding: '24px 28px', marginBottom: '28px' }}>
@@ -70,8 +75,10 @@ const Verify = () => {
             <Icon paths={icons.check} size={26} strokeWidth={2.5} />
           </div>
           <div>
-            <h2 style={{ margin: '0 0 4px', color: '#166534', fontSize: '1.15rem', fontWeight: '700' }}>Certificate Verified</h2>
-            <p style={{ margin: 0, color: '#16A34A', fontSize: '0.875rem' }}>This document has been verified by Verifact AI and is authentic.</p>
+            <h2 style={{ margin: '0 0 4px', color: '#166534', fontSize: '1.15rem', fontWeight: '700' }}>Certificate on file</h2>
+            <p style={{ margin: 0, color: '#16A34A', fontSize: '0.875rem' }}>
+              This certificate ID matches Verifact records. Scores reflect an AI-assisted review at the time of issuance.
+            </p>
           </div>
         </div>
 
@@ -99,7 +106,7 @@ const Verify = () => {
               </div>
               <div>
                 <p style={{ color: '#94A3B8', fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>Plagiarism</p>
-                <p style={{ color: '#0F172A', fontSize: '2rem', fontWeight: '700', margin: 0, letterSpacing: '-0.03em' }}>{Math.round(cert.plagiarism * 100)}<span style={{ fontSize: '1rem', color: '#94A3B8', fontWeight: '400' }}>%</span></p>
+                <p style={{ color: '#0F172A', fontSize: '2rem', fontWeight: '700', margin: 0, letterSpacing: '-0.03em' }}>{plagiarismPct}<span style={{ fontSize: '1rem', color: '#94A3B8', fontWeight: '400' }}>%</span></p>
               </div>
               <div>
                 <p style={{ color: '#94A3B8', fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>Status</p>

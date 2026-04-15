@@ -264,7 +264,7 @@ const StudentUpload = () => {
           <Icon paths={icons.upload} size={28} />
         </div>
         <h3 style={{ color: '#0F172A', margin: '0 0 8px', fontWeight: '600' }}>{file ? 'File ready' : 'Drag & drop your file here'}</h3>
-        <p style={{ color: '#94A3B8', margin: '0 0 20px', fontSize: '0.875rem' }}>PDF, DOCX, PPTX, PPT, TXT — Max 10MB</p>
+        <p style={{ color: '#94A3B8', margin: '0 0 20px', fontSize: '0.875rem' }}>PDF, DOCX, PPTX, PPT, TXT — max 4 MB per file</p>
         {!file && <button type="button" style={{ padding: '10px 28px', background: '#0F172A', color: 'white', borderRadius: '8px', fontWeight: '600', fontSize: '0.875rem' }}>Choose File</button>}
       </div>
 
@@ -427,7 +427,7 @@ const EducatorUpload = () => {
               <Icon paths={icons.upload} size={24} />
             </div>
             <h3 style={{ color: '#0F172A', margin: '0 0 6px', fontWeight: '600', fontSize: '0.95rem' }}>{file ? file.name : 'Drop student document here'}</h3>
-            <p style={{ color: '#94A3B8', margin: 0, fontSize: '0.8rem' }}>PDF, DOCX, PPTX, PPT, TXT — Max 10MB</p>
+            <p style={{ color: '#94A3B8', margin: 0, fontSize: '0.8rem' }}>PDF, DOCX, PPTX, PPT, TXT — max 4 MB per file</p>
           </div>
           {file && (
             <div style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

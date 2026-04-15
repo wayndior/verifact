@@ -34,6 +34,9 @@ const CertCard = ({ cert }) => {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const plagiarismPct =
+    cert.plagiarism != null && cert.plagiarism <= 1 ? Math.round(cert.plagiarism * 100) : Math.round(cert.plagiarism ?? 0)
+
   return (
     <div style={{ background: 'white', borderRadius: '14px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
       {/* Header */}
@@ -60,7 +63,7 @@ const CertCard = ({ cert }) => {
           </div>
           <div>
             <p style={{ color: '#94A3B8', fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>Plagiarism</p>
-            <p style={{ color: '#0F172A', fontSize: '1.5rem', fontWeight: '700', margin: 0, letterSpacing: '-0.03em' }}>{Math.round(cert.plagiarism * 100)}<span style={{ fontSize: '0.85rem', color: '#94A3B8', fontWeight: '400' }}>%</span></p>
+            <p style={{ color: '#0F172A', fontSize: '1.5rem', fontWeight: '700', margin: 0, letterSpacing: '-0.03em' }}>{plagiarismPct}<span style={{ fontSize: '0.85rem', color: '#94A3B8', fontWeight: '400' }}>%</span></p>
           </div>
           <div>
             <p style={{ color: '#94A3B8', fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>Status</p>

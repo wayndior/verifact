@@ -17,7 +17,7 @@ const icons = {
 };
 
 const steps = [
-  { step: '01', title: 'Upload your document', desc: 'Drag and drop or browse for a PDF, DOCX, PPTX, or TXT file. Max 10MB. Our system accepts any standard academic or presentation format.', icon: icons.doc },
+  { step: '01', title: 'Upload your document', desc: 'Drag and drop or browse for a PDF, DOCX, PPTX, or TXT file. Max 4 MB per file. Our system accepts common academic and presentation formats.', icon: icons.doc },
   { step: '02', title: 'AI extracts all claims', desc: 'Our AI reads through your entire document and identifies every factual statement that can be verified — from statistics to historical claims.', icon: icons.search },
   { step: '03', title: 'Sources are cross-referenced', desc: 'Each claim is checked against trusted academic databases and scientific sources. Confidence scores are assigned to every finding.', icon: icons.check },
   { step: '04', title: 'Plagiarism is detected', desc: 'The document is scanned for originality against common sources. Any suspicious passages are flagged with detail and context.', icon: icons.shield },

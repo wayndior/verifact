@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import AdvisoryBanner from './AdvisoryBanner';
 import './AppLayout.css';
 
 const Icon = ({ paths, size = 20 }) => (
@@ -97,6 +98,7 @@ const AppLayout = () => {
         </div>
 
         <div className="content-area">
+          <AdvisoryBanner />
           <Outlet />
         </div>
       </div>
