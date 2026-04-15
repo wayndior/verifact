@@ -84,17 +84,9 @@ router.post('/login', async (req, res) => {
   const normalizedEmail = email.toLowerCase().trim();
   const user = await query.get('SELECT * FROM users WHERE email = ?', [normalizedEmail]);
 
-  // Temporary debug logging — remove after fix is confirmed
-  console.log('[login] user found:', !!user);
-  console.log('[login] password_hash type:', typeof user?.password_hash);
-  console.log('[login] password_hash value:', user?.password_hash?.slice(0, 10));
-  console.log('[login] user keys:', user ? Object.keys(user) : 'null');
-
   // Use a constant-time comparison path so timing doesn't leak whether the email exists
   const hashToCompare = user?.password_hash ?? '$2b$12$invalidhashpadding000000000000000000000000000000000000000';
   const valid = await bcrypt.compare(password, hashToCompare);
-
-  console.log('[login] bcrypt valid:', valid);
 
   if (!user || !valid) {
     return res.status(401).json({ error: 'Invalid email or password.' });
