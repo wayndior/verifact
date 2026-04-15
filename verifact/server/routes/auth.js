@@ -201,9 +201,17 @@ router.post('/verify-email/resend', requireAuth, async (req, res) => {
   }
 
   const token = await issueEmailVerificationToken(user.user_id);
-  // Fire-and-forget — surface failures in logs only.
-  sendEmailVerification(user.email, user.full_name, token).catch(console.error);
-  res.json({ message: 'Verification email sent.' });
+  try {
+    await sendEmailVerification(user.email, user.full_name, token);
+    res.json({ message: 'Verification email sent.' });
+  } catch (err) {
+    console.error('[verify-email/resend]', err);
+    // Don't leak internal Resend errors verbatim; give a user-friendly message
+    // while still returning a 500 so the frontend can show the real failure.
+    res.status(500).json({
+      error: 'Failed to send the verification email. Please try again in a moment.',
+    });
+  }
 });
 
 // ── GET /api/auth/verify-email/:token ────────────────────────────────────────

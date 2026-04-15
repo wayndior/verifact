@@ -113,7 +113,7 @@ export async function sendWelcome(email, name) {
           <div style="padding:32px;">
             <h2 style="color:#0F172A;margin:0 0 12px;font-size:1.3rem;font-weight:700;">Welcome, ${name} 👋</h2>
             <p style="color:#64748B;line-height:1.6;margin:0 0 16px;">Your account is ready. You can now upload documents for AI-powered fact verification and receive cryptographic certificates.</p>
-            <p style="color:#64748B;line-height:1.6;margin:0 0 28px;">Free accounts get <strong>1 verification per day</strong>.</p>
+            <p style="color:#64748B;line-height:1.6;margin:0 0 28px;">Free student accounts get <strong>3 verifications per day</strong>. Educator accounts get 30/day plus bulk upload.</p>
             <a href="${BASE_URL}/dashboard" style="display:inline-block;padding:13px 28px;background:#22C55E;color:white;border-radius:9px;font-weight:600;font-size:0.95rem;text-decoration:none;">Go to Dashboard</a>
             <p style="color:#94A3B8;font-size:0.82rem;margin:24px 0 0;">Questions? Reply to this email and we'll help.</p>
           </div>
