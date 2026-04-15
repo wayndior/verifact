@@ -30,7 +30,7 @@ app.use(
         fontSrc: ["'self'"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
-        upgradeInsecureRequests: [],
+        upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : false,
       },
     },
     // Keep COEP off — QR code data-URLs and cross-origin assets need it disabled
@@ -90,7 +90,7 @@ app.use('/api/auth', authLimiter, authRouter);
 app.use('/api/documents', documentsRouter);
 app.use('/api/certificates', certificatesRouter);
 app.use('/api/password', authLimiter, passwordRouter);
-app.use('/api/classes', classesRouter);
+app.use('/api/classes', generalLimiter, classesRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

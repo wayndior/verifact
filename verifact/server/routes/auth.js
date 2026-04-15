@@ -133,6 +133,11 @@ router.put('/profile', requireAuth, async (req, res) => {
   if (!full_name || !full_name.trim()) {
     return res.status(400).json({ error: 'Full name is required.' });
   }
+  if (full_name.trim().length > 200) return res.status(400).json({ error: 'Full name must be 200 characters or fewer.' });
+  if (country && country.length > 100) return res.status(400).json({ error: 'Country must be 100 characters or fewer.' });
+  if (institution && institution.length > 300) return res.status(400).json({ error: 'Institution must be 300 characters or fewer.' });
+  if (school_id && school_id.length > 100) return res.status(400).json({ error: 'School ID must be 100 characters or fewer.' });
+  if (address && address.length > 500) return res.status(400).json({ error: 'Address must be 500 characters or fewer.' });
   await query.run(
     `UPDATE users SET full_name = ?, country = ?, institution = ?, school_id = ?, address = ?
      WHERE user_id = ?`,

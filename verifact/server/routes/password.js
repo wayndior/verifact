@@ -75,9 +75,10 @@ router.post('/reset', async (req, res) => {
     return res.status(400).json({ error: 'Invalid or expired reset token.' });
   }
 
+  // Mark token as used FIRST — prevents reuse even if the password update fails
+  await query.run('UPDATE password_reset_tokens SET used = 1 WHERE token = ?', [token]);
   const passwordHash = await bcrypt.hash(password, 12);
   await query.run('UPDATE users SET password_hash = ? WHERE user_id = ?', [passwordHash, row.user_id]);
-  await query.run('UPDATE password_reset_tokens SET used = 1 WHERE token = ?', [token]);
 
   res.json({ message: 'Password reset successfully.' });
 });

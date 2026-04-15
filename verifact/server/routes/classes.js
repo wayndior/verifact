@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db.js';
 
@@ -24,15 +25,20 @@ const requireEducator = (req, res, next) => {
   next();
 };
 
-// Generate a unique 6-char alphanumeric join code
+// Generate a cryptographically secure unique 6-char alphanumeric join code
 async function generateJoinCode() {
-  for (let i = 0; i < 10; i++) {
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no ambiguous chars (0/O, 1/I)
+  for (let i = 0; i < 20; i++) {
+    const bytes = crypto.randomBytes(6);
+    const code = Array.from(bytes).map(b => CHARS[b % CHARS.length]).join('');
     const existing = await query.get('SELECT class_id FROM classes WHERE join_code = ?', [code]);
     if (!existing) return code;
   }
   throw new Error('Failed to generate a unique join code.');
 }
+
+// Validate join code format
+const JOIN_CODE_RE = /^[A-Z2-9]{6}$/;
 
 // ── GET /api/classes ──────────────────────────────────────────────────────────
 // Educator: list own classes. Student: list joined classes.
@@ -68,6 +74,7 @@ router.get('/', requireAuth, async (req, res) => {
 router.post('/', requireAuth, requireEducator, async (req, res) => {
   const { name } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: 'Class name is required.' });
+  if (name.trim().length > 200) return res.status(400).json({ error: 'Class name must be 200 characters or fewer.' });
 
   const classId = uuidv4();
   const joinCode = await generateJoinCode();
@@ -94,9 +101,14 @@ router.post('/join', requireAuth, async (req, res) => {
   const { join_code } = req.body;
   if (!join_code?.trim()) return res.status(400).json({ error: 'Join code is required.' });
 
+  const normalized = join_code.trim().toUpperCase();
+  if (!JOIN_CODE_RE.test(normalized)) {
+    return res.status(400).json({ error: 'Invalid join code format.' });
+  }
+
   const cls = await query.get(
     'SELECT * FROM classes WHERE join_code = ?',
-    [join_code.trim().toUpperCase()]
+    [normalized]
   );
   if (!cls) return res.status(404).json({ error: 'Invalid join code. Please check and try again.' });
 
@@ -141,7 +153,8 @@ router.get('/:id', requireAuth, async (req, res) => {
      FROM class_members cm
      JOIN users u ON cm.student_id = u.user_id
      WHERE cm.class_id = ?
-     ORDER BY cm.joined_at ASC`,
+     ORDER BY cm.joined_at ASC
+     LIMIT 200`,
     [req.params.id]
   );
 
