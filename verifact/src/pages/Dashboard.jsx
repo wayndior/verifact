@@ -42,7 +42,7 @@ const StatCard = ({ label, value, sub, icon, accent }) => (
 )
 
 const StatusDot = ({ status }) => {
-  const color = { completed: '#22C55E', processing: '#3B82F6', error: '#EF4444', pending: '#94A3B8' }[status] || '#94A3B8'
+  const color = { complete: '#22C55E', completed: '#22C55E', processing: '#3B82F6', error: '#EF4444', pending: '#94A3B8' }[status] || '#94A3B8'
   return <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, display: 'inline-block', flexShrink: 0 }} />
 }
 
@@ -59,16 +59,16 @@ const StudentDashboard = ({ user, navigate, token }) => {
   useEffect(() => {
     fetch('/api/documents', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
-      .then(data => setDocs(data.documents || []))
+      .then(data => setDocs(Array.isArray(data) ? data : (data.documents || [])))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [token])
 
-  const completed = docs.filter(d => d.upload_status === 'completed')
-  const avgScore = completed.length ? Math.round(completed.reduce((s, d) => s + (d.verification_score || 0), 0) / completed.length * 100) : null
-  const avgPlagiarism = completed.length ? Math.round(completed.reduce((s, d) => s + (d.plagiarism_score || 0), 0) / completed.length * 100) : null
-  const bestScore = completed.length ? Math.round(Math.max(...completed.map(d => d.verification_score || 0)) * 100) : null
-  const certs = completed.filter(d => d.verification_score >= 0.8).length
+  const completed = docs.filter(d => d.upload_status === 'complete')
+  const avgScore = completed.length ? Math.round(completed.reduce((s, d) => s + (d.verification_score || 0), 0) / completed.length) : null
+  const avgPlagiarism = completed.length ? Math.round(completed.reduce((s, d) => s + (d.plagiarism_score || 0), 0) / completed.length) : null
+  const bestScore = completed.length ? Math.round(Math.max(...completed.map(d => d.verification_score || 0))) : null
+  const certs = completed.filter(d => d.verification_score >= 80).length
   const pending = docs.filter(d => d.upload_status === 'processing' || d.upload_status === 'pending').length
 
   return (
@@ -100,9 +100,9 @@ const StudentDashboard = ({ user, navigate, token }) => {
             <p style={{ color: '#94A3B8', fontSize: '0.875rem' }}>Submit a document to see your score breakdown.</p>
           ) : (
             [
-              { label: 'Passed (80–100)', count: completed.filter(d => d.verification_score >= 0.8).length, color: '#22C55E' },
-              { label: 'Needs Review (50–79)', count: completed.filter(d => d.verification_score >= 0.5 && d.verification_score < 0.8).length, color: '#F59E0B' },
-              { label: 'Failed (0–49)', count: completed.filter(d => d.verification_score < 0.5).length, color: '#EF4444' },
+              { label: 'Passed (80–100)', count: completed.filter(d => d.verification_score >= 80).length, color: '#22C55E' },
+              { label: 'Needs Review (50–79)', count: completed.filter(d => d.verification_score >= 50 && d.verification_score < 80).length, color: '#F59E0B' },
+              { label: 'Failed (0–49)', count: completed.filter(d => d.verification_score < 50).length, color: '#EF4444' },
             ].map(item => (
               <div key={item.label} style={{ marginBottom: '14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
@@ -156,7 +156,7 @@ const StudentDashboard = ({ user, navigate, token }) => {
         ) : (
           <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
             {docs.slice(0, 5).map((doc, i) => {
-              const score = doc.verification_score != null ? Math.round(doc.verification_score * 100) : null
+              const score = doc.verification_score != null ? Math.round(doc.verification_score) : null
               const scoreColor = score == null ? '#94A3B8' : score >= 80 ? '#16A34A' : score >= 50 ? '#D97706' : '#DC2626'
               return (
                 <div key={doc.document_id} onClick={() => navigate('/reports')} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 20px', borderBottom: i < Math.min(docs.length, 5) - 1 ? '1px solid #F8FAFC' : 'none', cursor: 'pointer' }}>
@@ -186,15 +186,15 @@ const EducatorDashboard = ({ user, navigate, token }) => {
   useEffect(() => {
     fetch('/api/documents', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
-      .then(data => setDocs(data.documents || []))
+      .then(data => setDocs(Array.isArray(data) ? data : (data.documents || [])))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [token])
 
-  const completed = docs.filter(d => d.upload_status === 'completed')
-  const avgScore = completed.length ? Math.round(completed.reduce((s, d) => s + (d.verification_score || 0), 0) / completed.length * 100) : null
-  const flagged = completed.filter(d => d.verification_score < 0.5).length
-  const plagiarismCases = completed.filter(d => d.plagiarism_score > 0.3).length
+  const completed = docs.filter(d => d.upload_status === 'complete')
+  const avgScore = completed.length ? Math.round(completed.reduce((s, d) => s + (d.verification_score || 0), 0) / completed.length) : null
+  const flagged = completed.filter(d => d.verification_score < 50).length
+  const plagiarismCases = completed.filter(d => d.plagiarism_score > 30).length
 
   return (
     <div>
@@ -244,7 +244,7 @@ const EducatorDashboard = ({ user, navigate, token }) => {
         ) : (
           <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
             {docs.slice(0, 5).map((doc, i) => {
-              const score = doc.verification_score != null ? Math.round(doc.verification_score * 100) : null
+              const score = doc.verification_score != null ? Math.round(doc.verification_score) : null
               const scoreColor = score == null ? '#94A3B8' : score >= 80 ? '#16A34A' : score >= 50 ? '#D97706' : '#DC2626'
               return (
                 <div key={doc.document_id} onClick={() => navigate('/reports')} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 20px', borderBottom: i < Math.min(docs.length, 5) - 1 ? '1px solid #F8FAFC' : 'none', cursor: 'pointer' }}>

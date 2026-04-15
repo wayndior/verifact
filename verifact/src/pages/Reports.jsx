@@ -19,6 +19,7 @@ const icons = {
 
 const StatusBadge = ({ status }) => {
   const map = {
+    complete:   { bg: '#F0FDF4', color: '#16A34A', text: 'Completed' },
     completed:  { bg: '#F0FDF4', color: '#16A34A', text: 'Completed' },
     processing: { bg: '#EFF6FF', color: '#2563EB', text: 'Processing' },
     pending:    { bg: '#F8FAFC', color: '#64748B', text: 'Pending' },
@@ -30,7 +31,7 @@ const StatusBadge = ({ status }) => {
 
 const VerdictBadge = ({ score }) => {
   if (score == null) return null
-  const pct = Math.round(score * 100)
+  const pct = Math.round(score)
   const color = pct >= 80 ? '#16A34A' : pct >= 50 ? '#D97706' : '#DC2626'
   const bg    = pct >= 80 ? '#F0FDF4'  : pct >= 50 ? '#FFFBEB'  : '#FEF2F2'
   return <span style={{ padding: '3px 10px', background: bg, color, borderRadius: '100px', fontSize: '0.75rem', fontWeight: '700' }}>{pct}/100</span>
@@ -135,7 +136,7 @@ const Reports = () => {
   useEffect(() => {
     fetch('/api/documents', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
-      .then(data => setDocs(data.documents || []))
+      .then(data => setDocs(Array.isArray(data) ? data : (data.documents || [])))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [token])
@@ -175,8 +176,8 @@ const Reports = () => {
           </div>
           {/* Rows */}
           {docs.map((doc, i) => {
-            const score = doc.verification_score != null ? Math.round(doc.verification_score * 100) : null
-            const plagiarism = doc.plagiarism_score != null ? Math.round(doc.plagiarism_score * 100) : null
+            const score = doc.verification_score != null ? Math.round(doc.verification_score) : null
+            const plagiarism = doc.plagiarism_score != null ? Math.round(doc.plagiarism_score) : null
             return (
               <div key={doc.document_id} style={{ display: 'grid', gridTemplateColumns: '1fr 120px 120px 120px 100px', padding: '14px 20px', borderBottom: i < docs.length - 1 ? '1px solid #F8FAFC' : 'none', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -193,7 +194,7 @@ const Reports = () => {
                 <span style={{ fontSize: '0.875rem', color: plagiarism != null ? (plagiarism > 30 ? '#DC2626' : '#16A34A') : '#94A3B8', fontWeight: '600' }}>
                   {plagiarism != null ? `${plagiarism}%` : '—'}
                 </span>
-                {doc.upload_status === 'completed' ? (
+                {doc.upload_status === 'complete' ? (
                   <button onClick={() => {
                     // Fetch full doc with results
                     fetch(`/api/documents/${doc.document_id}`, { headers: { Authorization: `Bearer ${token}` } })
