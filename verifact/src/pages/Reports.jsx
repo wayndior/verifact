@@ -17,16 +17,22 @@ const icons = {
   arrow:  ['M5 12h14', 'M12 5l7 7-7 7'],
 }
 
+const clayCard = {
+  background: 'white', borderRadius: '18px',
+  border: '3px solid var(--clay-border)',
+  boxShadow: '4px 4px 0 var(--clay-border)',
+}
+
 const StatusBadge = ({ status }) => {
   const map = {
-    complete:   { bg: '#F0FDF4', color: '#16A34A', text: 'Completed' },
-    completed:  { bg: '#F0FDF4', color: '#16A34A', text: 'Completed' },
-    processing: { bg: '#EFF6FF', color: '#2563EB', text: 'Processing' },
-    pending:    { bg: '#F8FAFC', color: '#64748B', text: 'Pending' },
-    error:      { bg: '#FEF2F2', color: '#DC2626', text: 'Error' },
+    complete:   { bg: '#F0FDF4', color: '#16A34A', text: 'Completed', border: '#16A34A' },
+    completed:  { bg: '#F0FDF4', color: '#16A34A', text: 'Completed', border: '#16A34A' },
+    processing: { bg: '#EFF6FF', color: '#2563EB', text: 'Processing', border: '#2563EB' },
+    pending:    { bg: '#F8FAFC', color: '#64748B', text: 'Pending', border: '#94A3B8' },
+    error:      { bg: '#FEF2F2', color: '#DC2626', text: 'Error', border: '#DC2626' },
   }
   const s = map[status] || map.pending
-  return <span style={{ padding: '3px 10px', background: s.bg, color: s.color, borderRadius: '100px', fontSize: '0.75rem', fontWeight: '600' }}>{s.text}</span>
+  return <span style={{ padding: '3px 10px', background: s.bg, color: s.color, borderRadius: '100px', fontSize: '0.75rem', fontWeight: '700', border: `1.5px solid ${s.border}` }}>{s.text}</span>
 }
 
 const VerdictBadge = ({ score }) => {
@@ -34,16 +40,16 @@ const VerdictBadge = ({ score }) => {
   const pct = Math.round(score)
   const color = pct >= 80 ? '#16A34A' : pct >= 50 ? '#D97706' : '#DC2626'
   const bg    = pct >= 80 ? '#F0FDF4'  : pct >= 50 ? '#FFFBEB'  : '#FEF2F2'
-  return <span style={{ padding: '3px 10px', background: bg, color, borderRadius: '100px', fontSize: '0.75rem', fontWeight: '700' }}>{pct}/100</span>
+  return <span style={{ padding: '3px 10px', background: bg, color, borderRadius: '100px', fontSize: '0.75rem', fontWeight: '700', border: `1.5px solid ${color}` }}>{pct}/100</span>
 }
 
 const ReportDetail = ({ doc, onBack }) => {
   if (!doc.results) return (
     <div>
-      <button onClick={onBack} style={{ background: 'none', color: '#64748B', fontWeight: '500', fontSize: '0.875rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <button onClick={onBack} style={{ background: 'none', color: '#64748B', fontWeight: '600', fontSize: '0.875rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '6px' }}>
         ← Back to Reports
       </button>
-      <div style={{ background: 'white', padding: '32px', borderRadius: '12px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+      <div style={{ ...clayCard, padding: '32px', textAlign: 'center' }}>
         <p style={{ color: '#94A3B8' }}>{doc.processing_error || 'No results available for this document.'}</p>
       </div>
     </div>
@@ -52,55 +58,54 @@ const ReportDetail = ({ doc, onBack }) => {
   const { results } = doc
   const score = results.summary.overallScore
   const scoreColor = score >= 80 ? '#22C55E' : score >= 50 ? '#F59E0B' : '#EF4444'
-  const verdictMap = { pass: { label: 'Passed', bg: '#F0FDF4', color: '#16A34A' }, review: { label: 'Needs Review', bg: '#FFFBEB', color: '#D97706' }, fail: { label: 'Failed', bg: '#FEF2F2', color: '#DC2626' } }
+  const verdictMap = { pass: { label: 'Passed', bg: '#F0FDF4', color: '#16A34A', border: '#16A34A' }, review: { label: 'Needs Review', bg: '#FFFBEB', color: '#D97706', border: '#D97706' }, fail: { label: 'Failed', bg: '#FEF2F2', color: '#DC2626', border: '#DC2626' } }
   const verdict = verdictMap[results.summary.verdict] || verdictMap.review
 
   return (
     <div>
-      <button onClick={onBack} style={{ background: 'none', color: '#64748B', fontWeight: '500', fontSize: '0.875rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <button onClick={onBack} style={{ background: 'none', color: '#64748B', fontWeight: '600', fontSize: '0.875rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '6px' }}>
         ← Back to Reports
       </button>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: '700', color: '#0F172A', marginBottom: '4px' }}>{doc.file_name}</h1>
+          <h1 style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--text-1)', marginBottom: '4px', fontFamily: 'Nunito, sans-serif' }}>{doc.file_name}</h1>
           <p style={{ color: '#94A3B8', fontSize: '0.85rem' }}>
             Uploaded {new Date(doc.uploaded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             {doc.processed_at && ` · Processed ${new Date(doc.processed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`}
           </p>
         </div>
-        <span style={{ padding: '4px 14px', background: verdict.bg, color: verdict.color, borderRadius: '100px', fontSize: '0.82rem', fontWeight: '700' }}>{verdict.label}</span>
+        <span style={{ padding: '4px 14px', background: verdict.bg, color: verdict.color, borderRadius: '100px', fontSize: '0.82rem', fontWeight: '700', border: `1.5px solid ${verdict.border}` }}>{verdict.label}</span>
       </div>
 
-      {/* Score + summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '24px', background: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '16px', alignItems: 'center' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '24px', ...clayCard, padding: '24px', marginBottom: '16px', alignItems: 'center' }}>
         <div style={{ textAlign: 'center', minWidth: '90px' }}>
-          <div style={{ fontSize: '3rem', fontWeight: '700', color: scoreColor, letterSpacing: '-0.04em', lineHeight: 1 }}>{score}</div>
+          <div style={{ fontSize: '3rem', fontWeight: '800', color: scoreColor, letterSpacing: '-0.04em', lineHeight: 1, fontFamily: 'Nunito, sans-serif' }}>{score}</div>
           <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '4px' }}>/ 100</div>
         </div>
         <div>
           <div style={{ display: 'flex', gap: '12px', marginBottom: '10px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.82rem', color: '#16A34A', fontWeight: '600' }}>✓ {results.summary.verifiedCount} verified</span>
-            <span style={{ fontSize: '0.82rem', color: '#D97706', fontWeight: '600' }}>⚠ {results.summary.unverifiedCount} unverified</span>
-            <span style={{ fontSize: '0.82rem', color: '#DC2626', fontWeight: '600' }}>✕ {results.summary.contradictedCount} contradicted</span>
-            <span style={{ fontSize: '0.82rem', color: '#64748B', fontWeight: '600' }}>Plagiarism: {Math.round(results.plagiarism.score * 100)}%</span>
+            <span style={{ fontSize: '0.82rem', color: '#16A34A', fontWeight: '700' }}>✓ {results.summary.verifiedCount} verified</span>
+            <span style={{ fontSize: '0.82rem', color: '#D97706', fontWeight: '700' }}>⚠ {results.summary.unverifiedCount} unverified</span>
+            <span style={{ fontSize: '0.82rem', color: '#DC2626', fontWeight: '700' }}>✕ {results.summary.contradictedCount} contradicted</span>
+            <span style={{ fontSize: '0.82rem', color: '#64748B', fontWeight: '700' }}>Plagiarism: {Math.round(results.plagiarism.score * 100)}%</span>
           </div>
           <p style={{ color: '#475569', fontSize: '0.875rem', lineHeight: '1.6', margin: 0 }}>{results.summary.recommendation}</p>
         </div>
       </div>
 
-      {/* Claims */}
-      <div style={{ background: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '16px' }}>
-        <h3 style={{ margin: '0 0 16px', fontSize: '0.95rem', fontWeight: '600', color: '#0F172A' }}>Factual Claims ({results.claims.length})</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#F8FAFC', borderRadius: '8px', overflow: 'hidden' }}>
+      <div style={{ ...clayCard, padding: '24px', marginBottom: '16px' }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-1)' }}>Factual Claims ({results.claims.length})</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#F8FAFC', borderRadius: '12px', overflow: 'hidden', border: '1.5px solid rgba(30,41,59,0.08)' }}>
           {results.claims.map((claim, i) => (
             <div key={i} style={{ background: 'white', padding: '14px 18px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '6px' }}>
-                <p style={{ margin: 0, color: '#0F172A', fontSize: '0.875rem', lineHeight: '1.5', flex: 1 }}>"{claim.text}"</p>
+                <p style={{ margin: 0, color: 'var(--text-1)', fontSize: '0.875rem', lineHeight: '1.5', flex: 1 }}>"{claim.text}"</p>
                 <span style={{
-                  padding: '3px 10px', borderRadius: '100px', fontSize: '0.72rem', fontWeight: '600', flexShrink: 0,
+                  padding: '3px 10px', borderRadius: '100px', fontSize: '0.72rem', fontWeight: '700', flexShrink: 0,
                   background: claim.status === 'verified' ? '#F0FDF4' : claim.status === 'contradicted' ? '#FEF2F2' : '#FFFBEB',
                   color: claim.status === 'verified' ? '#16A34A' : claim.status === 'contradicted' ? '#DC2626' : '#D97706',
+                  border: `1.5px solid ${claim.status === 'verified' ? '#16A34A' : claim.status === 'contradicted' ? '#DC2626' : '#D97706'}`,
                 }}>{claim.status}</span>
               </div>
               <p style={{ margin: 0, color: '#64748B', fontSize: '0.8rem' }}>{claim.explanation}</p>
@@ -110,10 +115,9 @@ const ReportDetail = ({ doc, onBack }) => {
         </div>
       </div>
 
-      {/* Plagiarism */}
       {results.plagiarism.flaggedPassages?.length > 0 && (
-        <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', padding: '20px 24px', borderRadius: '12px' }}>
-          <h3 style={{ margin: '0 0 14px', fontSize: '0.95rem', fontWeight: '600', color: '#DC2626' }}>Flagged Passages ({results.plagiarism.flaggedPassages.length})</h3>
+        <div style={{ background: '#FEF2F2', border: '2.5px solid #DC2626', padding: '20px 24px', borderRadius: '18px', boxShadow: '3px 3px 0 #DC2626' }}>
+          <h3 style={{ margin: '0 0 14px', fontSize: '0.95rem', fontWeight: '700', color: '#DC2626' }}>Flagged Passages ({results.plagiarism.flaggedPassages.length})</h3>
           {results.plagiarism.flaggedPassages.map((p, i) => (
             <div key={i} style={{ marginBottom: '12px' }}>
               <p style={{ margin: '0 0 4px', color: '#7F1D1D', fontSize: '0.875rem', fontStyle: 'italic' }}>"{p.text}"</p>
@@ -147,60 +151,57 @@ const Reports = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0F172A', marginBottom: '4px' }}>Reports</h1>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-1)', marginBottom: '4px', fontFamily: 'Nunito, sans-serif' }}>Reports</h1>
           <p style={{ color: '#64748B', fontSize: '0.9rem' }}>All your verified documents and their results.</p>
         </div>
-        <button onClick={() => navigate('/upload')} style={{ padding: '10px 20px', background: '#0F172A', color: 'white', borderRadius: '8px', fontWeight: '500', fontSize: '0.875rem' }}>
+        <button onClick={() => navigate('/upload')} style={{ padding: '10px 20px', background: 'var(--clay-border)', color: 'white', borderRadius: '12px', fontWeight: '700', fontSize: '0.875rem', border: '2.5px solid var(--clay-border)', boxShadow: '3px 3px 0 var(--clay-border)' }}>
           + New Verification
         </button>
       </div>
 
       {loading ? (
-        <div style={{ background: 'white', padding: '48px', borderRadius: '12px', border: '1px solid #E2E8F0', textAlign: 'center', color: '#94A3B8' }}>Loading…</div>
+        <div style={{ ...clayCard, padding: '48px', textAlign: 'center', color: '#94A3B8' }}>Loading…</div>
       ) : docs.length === 0 ? (
-        <div style={{ background: 'white', padding: '56px', borderRadius: '12px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: '#94A3B8' }}>
+        <div style={{ ...clayCard, padding: '56px', textAlign: 'center' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#F8FAFC', border: '2px solid var(--clay-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: '#94A3B8' }}>
             <Icon paths={icons.doc} size={24} />
           </div>
-          <h3 style={{ color: '#0F172A', margin: '0 0 6px', fontWeight: '600' }}>No reports yet</h3>
+          <h3 style={{ color: 'var(--text-1)', margin: '0 0 6px', fontWeight: '700' }}>No reports yet</h3>
           <p style={{ color: '#94A3B8', fontSize: '0.875rem', margin: '0 0 20px' }}>Upload a document to see your verification report here.</p>
-          <button onClick={() => navigate('/upload')} style={{ padding: '10px 24px', background: '#22C55E', color: 'white', borderRadius: '8px', fontWeight: '600', fontSize: '0.875rem' }}>Upload a document</button>
+          <button onClick={() => navigate('/upload')} style={{ padding: '10px 24px', background: '#22C55E', color: 'white', borderRadius: '12px', fontWeight: '700', fontSize: '0.875rem', border: '2.5px solid var(--clay-border)', boxShadow: '3px 3px 0 var(--clay-border)' }}>Upload a document</button>
         </div>
       ) : (
-        <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
-          {/* Table header */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 120px 120px 100px', padding: '12px 20px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+        <div style={{ ...clayCard, overflow: 'hidden', padding: 0 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 120px 120px 100px', padding: '12px 20px', background: '#F8FAFC', borderBottom: '2px solid rgba(30,41,59,0.08)' }}>
             {['Document', 'Status', 'Score', 'Plagiarism', ''].map(h => (
-              <span key={h} style={{ fontSize: '0.75rem', fontWeight: '600', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</span>
+              <span key={h} style={{ fontSize: '0.75rem', fontWeight: '700', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</span>
             ))}
           </div>
-          {/* Rows */}
           {docs.map((doc, i) => {
             const score = doc.verification_score != null ? Math.round(doc.verification_score) : null
             const plagiarism = doc.plagiarism_score != null ? Math.round(doc.plagiarism_score) : null
             return (
-              <div key={doc.document_id} style={{ display: 'grid', gridTemplateColumns: '1fr 120px 120px 120px 100px', padding: '14px 20px', borderBottom: i < docs.length - 1 ? '1px solid #F8FAFC' : 'none', alignItems: 'center' }}>
+              <div key={doc.document_id} style={{ display: 'grid', gridTemplateColumns: '1fr 120px 120px 120px 100px', padding: '14px 20px', borderBottom: i < docs.length - 1 ? '2px solid rgba(30,41,59,0.06)' : 'none', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', flexShrink: 0 }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#F8FAFC', border: '2px solid var(--clay-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', flexShrink: 0 }}>
                     <Icon paths={icons.doc} size={16} />
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontWeight: '500', color: '#0F172A', fontSize: '0.875rem' }}>{doc.file_name}</p>
+                    <p style={{ margin: 0, fontWeight: '600', color: 'var(--text-1)', fontSize: '0.875rem' }}>{doc.file_name}</p>
                     <p style={{ margin: 0, color: '#94A3B8', fontSize: '0.75rem' }}>{new Date(doc.uploaded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                   </div>
                 </div>
                 <StatusBadge status={doc.upload_status} />
                 <VerdictBadge score={doc.verification_score} />
-                <span style={{ fontSize: '0.875rem', color: plagiarism != null ? (plagiarism > 30 ? '#DC2626' : '#16A34A') : '#94A3B8', fontWeight: '600' }}>
+                <span style={{ fontSize: '0.875rem', color: plagiarism != null ? (plagiarism > 30 ? '#DC2626' : '#16A34A') : '#94A3B8', fontWeight: '700' }}>
                   {plagiarism != null ? `${plagiarism}%` : '—'}
                 </span>
                 {doc.upload_status === 'complete' ? (
                   <button onClick={() => {
-                    // Fetch full doc with results
                     fetch(`/api/documents/${doc.document_id}`, { headers: { Authorization: `Bearer ${token}` } })
                       .then(r => r.json())
                       .then(d => setSelected(d))
-                  }} style={{ background: 'none', color: '#22C55E', fontWeight: '600', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  }} style={{ background: 'none', color: '#22C55E', fontWeight: '700', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     View <Icon paths={icons.arrow} size={14} />
                   </button>
                 ) : <span />}

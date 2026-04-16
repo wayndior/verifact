@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
 
 * {
   margin: 0;
@@ -6,10 +6,64 @@
   box-sizing: border-box;
 }
 
+:root {
+  /* Brand */
+  --green:         #22C55E;
+  --green-dark:    #16A34A;
+  --green-light:   #DCFCE7;
+  --green-glow:    rgba(34, 197, 94, 0.25);
+
+  /* Accents */
+  --purple:        #8B5CF6;
+  --purple-light:  #EDE9FE;
+  --blue:          #3B82F6;
+  --blue-light:    #EFF6FF;
+  --coral:         #F43F5E;
+  --coral-light:   #FFF1F2;
+  --orange:        #F97316;
+  --orange-light:  #FFF7ED;
+  --yellow:        #EAB308;
+  --yellow-light:  #FEFCE8;
+
+  /* Backgrounds */
+  --bg:            #FFF8F2;
+  --bg-dash:       #F0EDE8;
+  --bg-muted:      #D6E4ED;
+  --surface:       #FFFFFF;
+
+  /* Text */
+  --text-1:        #1E293B;
+  --text-2:        #475569;
+  --text-3:        #94A3B8;
+
+  /* Claymorphism borders */
+  --border:        rgba(0, 0, 0, 0.07);
+  --border-strong: rgba(0, 0, 0, 0.12);
+  --clay-border:   #1E293B;
+  --clay-width:    3px;
+
+  /* Claymorphism shadows — thick offset for the "clay" look */
+  --shadow-xs:  0 2px 6px rgba(0,0,0,0.05);
+  --shadow-sm:  0 4px 12px rgba(0,0,0,0.06);
+  --shadow-md:  0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-lg:  0 16px 48px rgba(0,0,0,0.10), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-xl:  0 24px 64px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.07);
+  --clay-shadow: 6px 6px 0 var(--clay-border);
+  --clay-shadow-sm: 4px 4px 0 var(--clay-border);
+  --clay-shadow-lg: 8px 8px 0 var(--clay-border);
+
+  /* Radii */
+  --radius-sm:  10px;
+  --radius-md:  16px;
+  --radius-lg:  24px;
+  --radius-xl:  32px;
+  --radius-full: 9999px;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #F8FAFC;
-  color: #1E293B;
+  background-color: var(--bg);
+  color: var(--text-1);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -34,4 +88,18 @@ button {
 input, select, textarea {
   font-family: inherit;
   outline: none;
+}
+
+h1, h2, h3 {
+  font-family: 'Nunito', 'Inter', sans-serif;
+}
+
+/* Pulse animation for processing states */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

@@ -26,15 +26,21 @@ const icons = {
   arrow:   ['M5 12h14', 'M12 5l7 7-7 7'],
 }
 
+const clayCard = {
+  background: 'white', padding: '24px', borderRadius: '18px',
+  border: '3px solid var(--clay-border)',
+  boxShadow: '4px 4px 0 var(--clay-border)',
+}
+
 const StatCard = ({ label, value, sub, icon, accent }) => (
-  <div style={{ background: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+  <div style={clayCard}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
       <div>
-        <p style={{ color: '#64748B', fontSize: '0.78rem', fontWeight: '600', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</p>
-        <h2 style={{ margin: 0, color: accent || '#0F172A', fontSize: '2rem', fontWeight: '700', letterSpacing: '-0.03em' }}>{value}</h2>
+        <p style={{ color: '#64748B', fontSize: '0.78rem', fontWeight: '700', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</p>
+        <h2 style={{ margin: 0, color: accent || 'var(--text-1)', fontSize: '2rem', fontWeight: '800', letterSpacing: '-0.03em', fontFamily: 'Nunito, sans-serif' }}>{value}</h2>
         {sub && <p style={{ margin: '4px 0 0', color: '#94A3B8', fontSize: '0.8rem' }}>{sub}</p>}
       </div>
-      <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
+      <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#F8FAFC', border: '2px solid var(--clay-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
         <Icon paths={icon} size={19} />
       </div>
     </div>
@@ -74,28 +80,28 @@ const StudentDashboard = ({ user, navigate, token }) => {
   return (
     <div>
       <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0F172A', marginBottom: '4px' }}>{greeting}, {firstName}</h1>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-1)', marginBottom: '4px', fontFamily: 'Nunito, sans-serif' }}>{greeting}, {firstName}</h1>
         <p style={{ color: '#64748B', fontSize: '0.9rem' }}>Here's a summary of your academic verification activity.</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '16px', marginBottom: '24px' }}>
         <StatCard label="Documents Submitted" value={docs.length} icon={icons.doc} sub="All time" />
-        <StatCard label="Avg. Accuracy Score" value={avgScore != null ? `${avgScore}` : '—'} accent={avgScore >= 80 ? '#22C55E' : avgScore >= 50 ? '#F59E0B' : '#0F172A'} icon={icons.score} sub={avgScore != null ? `${completed.length} verified` : 'No data yet'} />
+        <StatCard label="Avg. Accuracy Score" value={avgScore != null ? `${avgScore}` : '—'} accent={avgScore >= 80 ? '#22C55E' : avgScore >= 50 ? '#F59E0B' : 'var(--text-1)'} icon={icons.score} sub={avgScore != null ? `${completed.length} verified` : 'No data yet'} />
         <StatCard label="Plagiarism Rate" value={avgPlagiarism != null ? `${avgPlagiarism}%` : '—'} icon={icons.eye} sub="Lower is better" />
         <StatCard label="Pending Review" value={pending} icon={icons.clock} sub="Currently processing" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '16px', marginBottom: '28px' }}>
-        <StatCard label="Certificates Earned" value={certs} accent={certs > 0 ? '#16A34A' : '#0F172A'} icon={icons.cert} sub="Docs that passed (80+)" />
+        <StatCard label="Certificates Earned" value={certs} accent={certs > 0 ? '#16A34A' : 'var(--text-1)'} icon={icons.cert} sub="Docs that passed (80+)" />
         <StatCard label="Best Score" value={bestScore != null ? `${bestScore}` : '—'} icon={icons.star} sub="Your top document" />
-        <StatCard label="Failed Verifications" value={completed.filter(d => d.verification_score < 50).length} accent={completed.filter(d => d.verification_score < 50).length > 0 ? '#EF4444' : '#0F172A'} icon={icons.alert} sub="Score below 50" />
+        <StatCard label="Failed Verifications" value={completed.filter(d => d.verification_score < 50).length} accent={completed.filter(d => d.verification_score < 50).length > 0 ? '#EF4444' : 'var(--text-1)'} icon={icons.alert} sub="Score below 50" />
         <StatCard label="Needs Review" value={completed.filter(d => d.verification_score >= 50 && d.verification_score < 80).length} icon={icons.flag} sub="Score 50–79" />
       </div>
 
       {/* Accuracy breakdown + tip */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '20px', marginBottom: '24px' }}>
-        <div style={{ background: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-          <h3 style={{ fontSize: '0.95rem', fontWeight: '600', color: '#0F172A', margin: '0 0 20px' }}>Score Distribution</h3>
+        <div style={clayCard}>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-1)', margin: '0 0 20px' }}>Score Distribution</h3>
           {completed.length === 0 ? (
             <p style={{ color: '#94A3B8', fontSize: '0.875rem' }}>Submit a document to see your score breakdown.</p>
           ) : (
@@ -107,9 +113,9 @@ const StudentDashboard = ({ user, navigate, token }) => {
               <div key={item.label} style={{ marginBottom: '14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                   <span style={{ fontSize: '0.85rem', color: '#475569' }}>{item.label}</span>
-                  <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#0F172A' }}>{item.count}</span>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-1)' }}>{item.count}</span>
                 </div>
-                <div style={{ height: '6px', background: '#F1F5F9', borderRadius: '100px', overflow: 'hidden' }}>
+                <div style={{ height: '8px', background: '#F1F5F9', borderRadius: '100px', overflow: 'hidden', border: '1.5px solid rgba(30,41,59,0.08)' }}>
                   <div style={{ height: '100%', width: `${completed.length ? item.count / completed.length * 100 : 0}%`, background: item.color, borderRadius: '100px' }} />
                 </div>
               </div>
@@ -117,7 +123,7 @@ const StudentDashboard = ({ user, navigate, token }) => {
           )}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '12px', padding: '20px' }}>
+          <div style={{ background: '#F0FDF4', border: '2.5px solid var(--green-dark)', borderRadius: '18px', padding: '20px', boxShadow: '3px 3px 0 var(--green-dark)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
               <Icon paths={icons.info} size={15} strokeWidth={2} />
               <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#16A34A', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tip</span>
@@ -126,13 +132,13 @@ const StudentDashboard = ({ user, navigate, token }) => {
               Documents with proper citations typically score <strong>30% higher</strong>. Always reference your sources.
             </p>
           </div>
-          <div style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', flex: 1 }}>
-            <p style={{ fontSize: '0.78rem', fontWeight: '600', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 12px' }}>Integrity Score Goal</p>
+          <div style={{ ...clayCard, flex: 1 }}>
+            <p style={{ fontSize: '0.78rem', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 12px' }}>Integrity Score Goal</p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '14px' }}>
-              <span style={{ fontSize: '2rem', fontWeight: '700', color: '#0F172A', letterSpacing: '-0.03em' }}>{avgScore ?? '—'}</span>
+              <span style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--text-1)', letterSpacing: '-0.03em', fontFamily: 'Nunito, sans-serif' }}>{avgScore ?? '—'}</span>
               <span style={{ color: '#94A3B8', fontSize: '0.85rem' }}>/ 100</span>
             </div>
-            <div style={{ height: '8px', background: '#F1F5F9', borderRadius: '100px', overflow: 'hidden', marginBottom: '8px' }}>
+            <div style={{ height: '10px', background: '#F1F5F9', borderRadius: '100px', overflow: 'hidden', marginBottom: '8px', border: '1.5px solid rgba(30,41,59,0.08)' }}>
               <div style={{ height: '100%', width: `${avgScore ?? 0}%`, background: 'linear-gradient(90deg, #22C55E, #16A34A)', borderRadius: '100px' }} />
             </div>
             <p style={{ color: '#94A3B8', fontSize: '0.78rem', margin: 0 }}>Target: 80+ with &lt;10% plagiarism for a certificate</p>
@@ -143,26 +149,26 @@ const StudentDashboard = ({ user, navigate, token }) => {
       {/* Recent submissions */}
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <h2 style={{ fontSize: '1rem', fontWeight: '600', color: '#0F172A', margin: 0 }}>Recent Submissions</h2>
-          {docs.length > 0 && <button onClick={() => navigate('/reports')} style={{ background: 'none', color: '#22C55E', fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>View all <Icon paths={icons.arrow} size={14} /></button>}
+          <h2 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-1)', margin: 0 }}>Recent Submissions</h2>
+          {docs.length > 0 && <button onClick={() => navigate('/reports')} style={{ background: 'none', color: '#22C55E', fontWeight: '700', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>View all <Icon paths={icons.arrow} size={14} /></button>}
         </div>
         {loading ? (
-          <div style={{ background: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#94A3B8', fontSize: '0.875rem' }}>Loading…</div>
+          <div style={{ ...clayCard, color: '#94A3B8', fontSize: '0.875rem' }}>Loading…</div>
         ) : docs.length === 0 ? (
-          <div style={{ background: 'white', padding: '36px', borderRadius: '12px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+          <div style={{ ...clayCard, textAlign: 'center', padding: '36px' }}>
             <p style={{ color: '#94A3B8', fontSize: '0.875rem', margin: '0 0 14px' }}>No submissions yet. Upload your first document to get started.</p>
-            <button onClick={() => navigate('/upload')} style={{ padding: '10px 24px', background: '#22C55E', color: 'white', borderRadius: '8px', fontWeight: '600', fontSize: '0.875rem' }}>Upload a document</button>
+            <button onClick={() => navigate('/upload')} style={{ padding: '10px 24px', background: '#22C55E', color: 'white', borderRadius: '12px', fontWeight: '700', fontSize: '0.875rem', border: '2.5px solid var(--clay-border)', boxShadow: '3px 3px 0 var(--clay-border)' }}>Upload a document</button>
           </div>
         ) : (
-          <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+          <div style={{ ...clayCard, padding: 0, overflow: 'hidden' }}>
             {docs.slice(0, 5).map((doc, i) => {
               const score = doc.verification_score != null ? Math.round(doc.verification_score) : null
               const scoreColor = score == null ? '#94A3B8' : score >= 80 ? '#16A34A' : score >= 50 ? '#D97706' : '#DC2626'
               return (
-                <div key={doc.document_id} onClick={() => navigate('/reports')} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 20px', borderBottom: i < Math.min(docs.length, 5) - 1 ? '1px solid #F8FAFC' : 'none', cursor: 'pointer' }}>
+                <div key={doc.document_id} onClick={() => navigate('/reports')} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 20px', borderBottom: i < Math.min(docs.length, 5) - 1 ? '2px solid rgba(30,41,59,0.06)' : 'none', cursor: 'pointer' }}>
                   <StatusDot status={doc.upload_status} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontWeight: '500', color: '#0F172A', fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.file_name}</p>
+                    <p style={{ margin: 0, fontWeight: '600', color: 'var(--text-1)', fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.file_name}</p>
                     <p style={{ margin: 0, color: '#94A3B8', fontSize: '0.75rem' }}>{new Date(doc.uploaded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                   </div>
                   <span style={{ fontWeight: '700', fontSize: '0.9rem', color: scoreColor }}>{score != null ? `${score}/100` : doc.upload_status}</span>
@@ -199,30 +205,40 @@ const EducatorDashboard = ({ user, navigate, token }) => {
   return (
     <div>
       <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0F172A', marginBottom: '4px' }}>Welcome back, {user.full_name?.split(' ')[0] || 'Educator'}</h1>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-1)', marginBottom: '4px', fontFamily: 'Nunito, sans-serif' }}>Welcome back, {user.full_name?.split(' ')[0] || 'Educator'}</h1>
         <p style={{ color: '#64748B', fontSize: '0.9rem' }}>Overview of your verification activity and student submissions.</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '28px' }}>
         <StatCard label="Total Submissions" value={docs.length} icon={icons.doc} />
         <StatCard label="Avg. Accuracy Score" value={avgScore != null ? avgScore : '—'} accent="#22C55E" icon={icons.score} sub={completed.length ? `${completed.length} completed` : 'No data yet'} />
-        <StatCard label="Flagged (Score < 50)" value={flagged} accent={flagged > 0 ? '#EF4444' : '#0F172A'} icon={icons.flag} sub="Needs attention" />
-        <StatCard label="Plagiarism Cases" value={plagiarismCases} accent={plagiarismCases > 0 ? '#EF4444' : '#0F172A'} icon={icons.eye} sub="Score > 30%" />
+        <StatCard label="Flagged (Score < 50)" value={flagged} accent={flagged > 0 ? '#EF4444' : 'var(--text-1)'} icon={icons.flag} sub="Needs attention" />
+        <StatCard label="Plagiarism Cases" value={plagiarismCases} accent={plagiarismCases > 0 ? '#EF4444' : 'var(--text-1)'} icon={icons.eye} sub="Score > 30%" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '28px' }}>
         {[
-          { label: 'Review submissions', desc: 'Check all verified documents', icon: icons.doc, path: '/reports' },
+          { label: 'Review submissions', desc: 'Check all verified documents', icon: icons.doc, path: '/reports', dark: false },
           { label: 'Verify a document', desc: 'Upload a student submission', icon: icons.upload, dark: true, path: '/upload' },
-          { label: 'Analytics', desc: 'Score trends and breakdown', icon: icons.chart, path: '/reports' },
-          { label: 'Certificates', desc: 'Documents that passed', icon: icons.cert, path: '/certificates' },
+          { label: 'Analytics', desc: 'Score trends and breakdown', icon: icons.chart, path: '/reports', dark: false },
+          { label: 'Certificates', desc: 'Documents that passed', icon: icons.cert, path: '/certificates', dark: false },
         ].map(action => (
-          <div key={action.label} onClick={() => navigate(action.path)} style={{ background: action.dark ? '#0F172A' : 'white', padding: '22px', borderRadius: '12px', cursor: 'pointer', border: action.dark ? 'none' : '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: '9px', background: action.dark ? 'rgba(255,255,255,0.08)' : '#F8FAFC', border: action.dark ? 'none' : '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: action.dark ? 'white' : '#475569' }}>
+          <div key={action.label} onClick={() => navigate(action.path)} style={{
+            background: action.dark ? 'var(--clay-border)' : 'white',
+            padding: '22px', borderRadius: '18px', cursor: 'pointer',
+            border: `3px solid var(--clay-border)`,
+            boxShadow: '4px 4px 0 var(--clay-border)',
+            display: 'flex', flexDirection: 'column', gap: '10px',
+            transition: 'transform 0.15s, box-shadow 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-2px, -2px)'; e.currentTarget.style.boxShadow = '6px 6px 0 var(--clay-border)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'translate(0, 0)'; e.currentTarget.style.boxShadow = '4px 4px 0 var(--clay-border)' }}
+          >
+            <div style={{ width: '40px', height: '40px', borderRadius: '11px', background: action.dark ? 'rgba(255,255,255,0.08)' : '#F8FAFC', border: action.dark ? '2px solid rgba(255,255,255,0.15)' : '2px solid var(--clay-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: action.dark ? 'white' : '#475569' }}>
               <Icon paths={action.icon} size={19} />
             </div>
             <div>
-              <p style={{ color: action.dark ? 'white' : '#0F172A', fontWeight: '600', margin: '0 0 3px', fontSize: '0.9rem' }}>{action.label}</p>
+              <p style={{ color: action.dark ? 'white' : 'var(--text-1)', fontWeight: '700', margin: '0 0 3px', fontSize: '0.9rem' }}>{action.label}</p>
               <p style={{ color: action.dark ? '#64748B' : '#94A3B8', margin: 0, fontSize: '0.8rem' }}>{action.desc}</p>
             </div>
           </div>
@@ -231,26 +247,26 @@ const EducatorDashboard = ({ user, navigate, token }) => {
 
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <h2 style={{ fontSize: '1rem', fontWeight: '600', color: '#0F172A', margin: 0 }}>Recent Verifications</h2>
-          {docs.length > 0 && <button onClick={() => navigate('/reports')} style={{ background: 'none', color: '#22C55E', fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>View all <Icon paths={icons.arrow} size={14} /></button>}
+          <h2 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-1)', margin: 0 }}>Recent Verifications</h2>
+          {docs.length > 0 && <button onClick={() => navigate('/reports')} style={{ background: 'none', color: '#22C55E', fontWeight: '700', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>View all <Icon paths={icons.arrow} size={14} /></button>}
         </div>
         {loading ? (
-          <div style={{ background: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#94A3B8', fontSize: '0.875rem' }}>Loading…</div>
+          <div style={{ ...clayCard, color: '#94A3B8', fontSize: '0.875rem' }}>Loading…</div>
         ) : docs.length === 0 ? (
-          <div style={{ background: 'white', padding: '36px', borderRadius: '12px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+          <div style={{ ...clayCard, textAlign: 'center', padding: '36px' }}>
             <p style={{ color: '#94A3B8', fontSize: '0.875rem', margin: '0 0 14px' }}>No verifications yet. Upload a student document to get started.</p>
-            <button onClick={() => navigate('/upload')} style={{ padding: '10px 24px', background: '#22C55E', color: 'white', borderRadius: '8px', fontWeight: '600', fontSize: '0.875rem' }}>Verify a document</button>
+            <button onClick={() => navigate('/upload')} style={{ padding: '10px 24px', background: '#22C55E', color: 'white', borderRadius: '12px', fontWeight: '700', fontSize: '0.875rem', border: '2.5px solid var(--clay-border)', boxShadow: '3px 3px 0 var(--clay-border)' }}>Verify a document</button>
           </div>
         ) : (
-          <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+          <div style={{ ...clayCard, padding: 0, overflow: 'hidden' }}>
             {docs.slice(0, 5).map((doc, i) => {
               const score = doc.verification_score != null ? Math.round(doc.verification_score) : null
               const scoreColor = score == null ? '#94A3B8' : score >= 80 ? '#16A34A' : score >= 50 ? '#D97706' : '#DC2626'
               return (
-                <div key={doc.document_id} onClick={() => navigate('/reports')} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 20px', borderBottom: i < Math.min(docs.length, 5) - 1 ? '1px solid #F8FAFC' : 'none', cursor: 'pointer' }}>
+                <div key={doc.document_id} onClick={() => navigate('/reports')} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 20px', borderBottom: i < Math.min(docs.length, 5) - 1 ? '2px solid rgba(30,41,59,0.06)' : 'none', cursor: 'pointer' }}>
                   <StatusDot status={doc.upload_status} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontWeight: '500', color: '#0F172A', fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.file_name}</p>
+                    <p style={{ margin: 0, fontWeight: '600', color: 'var(--text-1)', fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.file_name}</p>
                     <p style={{ margin: 0, color: '#94A3B8', fontSize: '0.75rem' }}>{new Date(doc.uploaded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                   </div>
                   <span style={{ fontWeight: '700', fontSize: '0.9rem', color: scoreColor, flexShrink: 0 }}>{score != null ? `${score}/100` : doc.upload_status}</span>
