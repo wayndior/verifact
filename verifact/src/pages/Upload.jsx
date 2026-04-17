@@ -15,6 +15,7 @@ const icons = {
   alert:  ['M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z', 'M12 9v4', 'M12 17h.01'],
   info:   ['M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z', 'M12 16v-4', 'M12 8h.01'],
   layers: ['M12 2l10 6-10 6-10-6 10-6z', 'M2 14l10 6 10-6', 'M2 18l10 6 10-6'],
+  shield: ['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'],
 }
 
 const ACCEPTED = '.pdf,.docx,.doc,.pptx,.ppt,.txt'
@@ -264,6 +265,27 @@ const StudentUpload = () => {
             <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: '1.6', margin: 0 }}>{results.summary.recommendation}</p>
           </div>
         </div>
+
+        {result.certificateId ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: '#F0FDF4', border: '2.5px solid #16A34A', borderRadius: '16px', padding: '16px 22px', marginBottom: '20px', boxShadow: '3px 3px 0 #16A34A' }}>
+            <div style={{ color: '#16A34A', flexShrink: 0 }}><Icon paths={icons.shield} size={22} strokeWidth={2} /></div>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: 0, fontWeight: '700', color: '#15803D', fontSize: '0.9rem' }}>Certificate issued</p>
+              <p style={{ margin: '2px 0 0', color: '#16A34A', fontSize: '0.8rem' }}>ID: {result.certificateId}</p>
+            </div>
+            <a href="/certificates" style={{ padding: '7px 16px', background: '#16A34A', color: 'white', borderRadius: '10px', fontWeight: '700', fontSize: '0.82rem', textDecoration: 'none', border: '2px solid #15803D', whiteSpace: 'nowrap' }}>View Certificate</a>
+          </div>
+        ) : score >= 80 ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: '#FFFBEB', border: '2.5px solid #D97706', borderRadius: '16px', padding: '16px 22px', marginBottom: '20px', boxShadow: '3px 3px 0 #D97706' }}>
+            <div style={{ color: '#D97706', flexShrink: 0 }}><Icon paths={icons.shield} size={22} strokeWidth={2} /></div>
+            <div>
+              <p style={{ margin: 0, fontWeight: '700', color: '#92400E', fontSize: '0.9rem' }}>Certificate not issued</p>
+              <p style={{ margin: '2px 0 0', color: '#78350F', fontSize: '0.8rem' }}>
+                Plagiarism score was {Math.round(result.plagiarism)}% — must be under 10% to qualify.
+              </p>
+            </div>
+          </div>
+        ) : null}
 
         <div style={{ ...clayCard, padding: '24px', marginBottom: '20px' }}>
           <h3 style={{ margin: '0 0 20px', fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-1)' }}>Accuracy Breakdown</h3>
